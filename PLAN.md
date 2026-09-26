@@ -61,6 +61,8 @@ interface Segment {
   kind: 'work' | 'break';
   start: string;
   end: string | null;    // null while running
+  rawStart?: string;     // unrounded stamp, set when rounding is on
+  rawEnd?: string;
   note?: string;
   source: 'manual' | 'button' | 'wifi' | 'notification';
 }
