@@ -63,7 +63,7 @@
   onblur={commit}
   onkeydown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
   class={cn(
-    'tabular h-10 w-20 rounded-lg border border-input bg-transparent px-2 text-center text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30',
+    'h-10 w-20 rounded-lg border border-input bg-transparent px-2 text-center text-base tabular outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30',
     className
   )}
 />

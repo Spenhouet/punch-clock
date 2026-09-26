@@ -45,7 +45,7 @@
 
 <PageHeader title={m.tab_settings()} />
 
-<div class="flex flex-col gap-6 pb-4">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   <Group title={m.settings_work()}>
     <Row
       icon={Briefcase}
@@ -73,7 +73,7 @@
   <Group title={m.settings_breaks()} footer={m.presets_hint()}>
     <div class="flex flex-wrap items-center gap-2 px-4 py-3">
       {#each settings.breakPresets as p (p)}
-        <span class="tabular inline-flex items-center gap-1 rounded-full bg-muted py-1 pr-1 pl-3 text-sm font-medium">
+        <span class="inline-flex items-center gap-1 rounded-full bg-muted py-1 pr-1 pl-3 text-sm font-medium tabular">
           {m.minutes_short({ minutes: p })}
           <button
             type="button"
@@ -166,7 +166,7 @@
 
   <Group title={m.settings_app()}>
     <div class="flex flex-col gap-3 px-4 py-3">
-      <span class="text-[15px]">{m.language()}</span>
+      <span class="text-body">{m.language()}</span>
       <Segmented
         value={getLocale()}
         options={[
@@ -177,7 +177,7 @@
       />
     </div>
     <div class="flex flex-col gap-3 px-4 py-3">
-      <span class="text-[15px]">{m.theme()}</span>
+      <span class="text-body">{m.theme()}</span>
       <Segmented
         value={userPrefersMode.current}
         options={[
@@ -189,7 +189,7 @@
       />
     </div>
     <div class="flex flex-col gap-2 px-4 py-3">
-      <label for="name" class="text-[15px]">{m.your_name()}</label>
+      <label for="name" class="text-body">{m.your_name()}</label>
       <Input
         id="name"
         bind:value={name}

@@ -83,10 +83,7 @@
   ]);
 </script>
 
-<div
-  class="mx-auto flex min-h-dvh max-w-md flex-col px-6 pt-10 pb-8"
-  style="padding-top: calc(env(safe-area-inset-top) + 2.5rem)"
->
+<div class="mx-auto flex min-h-dvh max-w-md flex-col px-6 pt-safe-10 pb-8">
   <div class="mb-8 flex items-center gap-3">
     <img src={asset('/favicon.svg')} alt="" class="size-11 rounded-xl" />
     <div class="flex flex-1 gap-1.5">
@@ -158,7 +155,7 @@
       </Field>
       <div class="grid grid-cols-2 gap-3">
         <Field label={m.days_per_year()}>
-          <Input type="number" inputmode="decimal" min="0" step="0.5" bind:value={entitlement} class="h-11 text-base" />
+          <Input type="number" inputmode="decimal" min="0" step="0.5" bind:value={entitlement} class="h-11" />
         </Field>
         <Field label={m.setup_vacation_left()}>
           <Input
@@ -168,7 +165,7 @@
             step="0.5"
             bind:value={left}
             oninput={() => (leftTouched = true)}
-            class="h-11 text-base"
+            class="h-11"
           />
         </Field>
       </div>

@@ -12,3 +12,4 @@ src/lib/paraglide
 project.inlang/.meta.json
 project.inlang/README.md
 project.inlang/.gitignore
+d.tmp.mjs

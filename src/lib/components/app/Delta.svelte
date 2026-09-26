@@ -11,7 +11,7 @@
 
 <span
   class={cn(
-    'tabular font-medium',
+    'font-medium tabular',
     muted || Math.round(minutes) === 0 ? 'text-muted-foreground' : minutes > 0 ? 'text-positive' : 'text-negative',
     className
   )}>{formatMinutes(minutes, { sign: true })}</span

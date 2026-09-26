@@ -27,7 +27,7 @@
         onclick={() => onday(d.date)}
         data-date={d.date}
         class={cn(
-          'flex w-full items-center gap-3 rounded-2xl bg-card px-3 py-3 text-left shadow-xs ring-1 ring-border transition-colors hover:bg-muted/60',
+          'flex w-full items-center gap-3 surface px-3 py-3 text-left transition-colors hover:bg-muted/60',
           d.date === today && 'ring-2 ring-primary/50',
           isSel && 'bg-primary/10 ring-2 ring-primary',
           weekend && 'bg-transparent shadow-none'
@@ -52,7 +52,7 @@
         </span>
         <span class="min-w-0 flex-1">
           {#if d.first !== undefined}
-            <span class="tabular block text-sm font-medium">
+            <span class="block text-sm font-medium tabular">
               {toHHmm(d.first)} – {d.running ? m.now() : toHHmm(d.last!)}
             </span>
           {/if}
@@ -80,9 +80,9 @@
         </span>
         <span class="flex flex-col items-end">
           {#if d.gross > 0 || (d.date <= today && d.target > 0)}
-            <span class="tabular text-sm font-semibold">{formatMinutes(d.worked)}</span>
+            <span class="text-sm font-semibold tabular">{formatMinutes(d.worked)}</span>
           {:else if d.target > 0}
-            <span class="tabular text-sm text-muted-foreground">{formatMinutes(d.target)}</span>
+            <span class="text-sm text-muted-foreground tabular">{formatMinutes(d.target)}</span>
           {/if}
           {#if d.counted && (d.target || d.worked)}<Delta minutes={d.delta} class="text-xs" />{/if}
         </span>

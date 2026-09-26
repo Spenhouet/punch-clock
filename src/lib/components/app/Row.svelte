@@ -29,10 +29,10 @@
     >
   {/if}
   <span class="min-w-0 flex-1">
-    <span class="block text-[15px]">{label}</span>
+    <span class="block text-body">{label}</span>
     {#if description}<span class="block text-xs text-muted-foreground">{description}</span>{/if}
   </span>
-  {#if value}<span class="tabular truncate text-sm text-muted-foreground">{value}</span>{/if}
+  {#if value}<span class="truncate text-sm text-muted-foreground tabular">{value}</span>{/if}
   {@render children?.()}
   {#if href || onclick}<ChevronRight class="size-4 shrink-0 text-muted-foreground" />{/if}
 {/snippet}

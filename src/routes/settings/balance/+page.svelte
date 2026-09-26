@@ -46,15 +46,15 @@
 
 <PageHeader title={m.overtime_balance()} back={resolve('/settings')} />
 
-<div class="flex flex-col gap-6 pb-4">
-  <div class="rounded-2xl bg-card p-5 text-center shadow-xs ring-1 ring-border">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
+  <div class="surface p-5 text-center">
     <p class="text-sm text-muted-foreground">{m.balance_current()}</p>
     <p class="text-4xl font-semibold tracking-tight"><Delta minutes={balance} /></p>
   </div>
 
   <Group title={m.set_balance()} footer={m.set_balance_hint()}>
     <form class="flex items-center gap-3 px-4 py-3" onsubmit={(e) => (e.preventDefault(), setBalance())}>
-      <span class="flex-1 text-[15px]">{m.new_balance()}</span>
+      <span class="flex-1 text-body">{m.new_balance()}</span>
       <HoursInput bind:minutes={desired} allowNegative class="w-24" />
       <Button type="submit" disabled={Math.round(desired) === Math.round(balance)}>{m.apply()}</Button>
     </form>
@@ -68,7 +68,7 @@
           <div class="flex gap-1">
             <Button
               variant="secondary"
-              class="w-10 px-0 text-lg"
+              size="icon"
               onclick={() => (sign = sign === 1 ? -1 : 1)}
               aria-label={m.toggle_sign()}>{sign === 1 ? '+' : '−'}</Button
             >
@@ -86,7 +86,7 @@
       {#each adjustments as a (a.id)}
         <div class="flex min-h-14 items-center gap-3 px-4 py-2">
           <div class="min-w-0 flex-1">
-            <p class="truncate text-[15px]">{a.reason}</p>
+            <p class="truncate text-body">{a.reason}</p>
             <p class="text-xs text-muted-foreground">{formatDate(a.date, 'PP')}</p>
           </div>
           <Delta minutes={a.minutes} />

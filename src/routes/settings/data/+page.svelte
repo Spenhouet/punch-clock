@@ -57,7 +57,7 @@
 
 <PageHeader title={m.backup_export()} back={resolve('/settings')} />
 
-<div class="flex flex-col gap-6 pb-4">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   <Group title={m.backup()} footer={m.backup_hint({ segments: counts.segments, absences: counts.absences })}>
     <Row
       icon={Download}

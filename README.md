@@ -8,6 +8,10 @@
   <em>A simple, offline time tracker for one person. Clock in and out, take breaks, track overtime and vacation, export timesheets. Runs in the browser, installs as a PWA and ships as an Android app. English and German.</em>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/desktop-week.png" alt="PunchClock on desktop: week view" width="800">
+</p>
+
 <p align="center"><a href="https://spenhouet.com/punch-clock/">Open the web app</a> · <a href="https://github.com/Spenhouet/punch-clock/releases/latest">Download the Android app</a></p>
 
 ## Features
@@ -74,6 +78,10 @@ Send a broadcast intent to package `com.spenhouet.punchclock` with one of these 
 - `com.spenhouet.punchclock.CLOCK_OUT`
 - `com.spenhouet.punchclock.BREAK`
 - `com.spenhouet.punchclock.RESUME`
+
+## Design
+
+The design system, tokens and component rules are in [DESIGN.md](DESIGN.md). `bun run lint` enforces them with [@shadcn/lint](https://github.com/shadcn-ui/lint).
 
 ## Development
 

@@ -6,7 +6,7 @@
 
 <section class="flex flex-col gap-1.5">
   {#if title}<h2 class="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{title}</h2>{/if}
-  <div class="divide-y overflow-hidden rounded-2xl bg-card shadow-xs ring-1 ring-border">
+  <div class="divide-y overflow-hidden surface">
     {@render children()}
   </div>
   {#if footer}<p class="px-3 text-xs text-muted-foreground">{footer}</p>{/if}

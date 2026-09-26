@@ -21,7 +21,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="rounded-2xl" showCloseButton={false}>
+  <Dialog.Content showCloseButton={false}>
     <Dialog.Header>
       <Dialog.Title>{title}</Dialog.Title>
       <Dialog.Description>{message}</Dialog.Description>

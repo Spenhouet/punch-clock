@@ -26,6 +26,7 @@
   --positive: oklch(0.55 0.14 155);
   --negative: oklch(0.58 0.19 25);
   --break: oklch(0.72 0.15 70);
+  --break-foreground: oklch(0.2 0.03 70);
   --vacation: oklch(0.62 0.13 240);
   --sick: oklch(0.6 0.16 15);
   --comp: oklch(0.6 0.13 300);
@@ -55,11 +56,25 @@
   --positive: oklch(0.72 0.15 155);
   --negative: oklch(0.7 0.17 25);
   --break: oklch(0.8 0.14 75);
+  --break-foreground: oklch(0.2 0.03 70);
   --vacation: oklch(0.72 0.12 240);
   --sick: oklch(0.7 0.15 15);
   --comp: oklch(0.72 0.12 300);
   --holiday: oklch(0.8 0.12 90);
   --special: oklch(0.72 0.09 200);
+}
+
+@theme {
+  /* Type scale additions, see DESIGN.md */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1rem;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.375rem;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1;
+  --radius-xs: 0.25rem;
 }
 
 @theme inline {
@@ -88,12 +103,41 @@
   --color-positive: var(--positive);
   --color-negative: var(--negative);
   --color-break: var(--break);
+  --color-break-foreground: var(--break-foreground);
   --color-vacation: var(--vacation);
   --color-sick: var(--sick);
   --color-comp: var(--comp);
   --color-holiday: var(--holiday);
   --color-special: var(--special);
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Card surface: the one container style for panels, tiles and list groups */
+@utility surface {
+  @apply rounded-2xl bg-card shadow-xs ring-1 ring-border;
+}
+
+/* Time axis plus seven day columns */
+@utility grid-cols-week {
+  grid-template-columns: 3rem repeat(7, minmax(0, 1fr));
+}
+
+/* Safe-area insets for edge-to-edge Android and notched phones */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pt-safe-* {
+  padding-top: calc(env(safe-area-inset-top) + --spacing(--value(integer)));
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 @layer base {
@@ -106,8 +150,5 @@
   body {
     @apply bg-background text-foreground antialiased;
     overscroll-behavior-y: none;
-  }
-  .tabular {
-    font-variant-numeric: tabular-nums;
   }
 }

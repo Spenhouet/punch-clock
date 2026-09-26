@@ -92,20 +92,20 @@
     </Field>
     <div class="grid grid-cols-2 gap-3">
       <Field label={m.from()}>
-        <Input type="time" bind:value={from} required class="tabular h-11 text-base" />
+        <Input type="time" bind:value={from} required class="h-11" />
       </Field>
       <Field label={m.to()}>
         {#if isRunning}
           <div class="flex h-11 items-center rounded-lg border px-3 text-sm text-primary">{m.running()}</div>
         {:else}
-          <Input type="time" bind:value={to} required class="tabular h-11 text-base" />
+          <Input type="time" bind:value={to} required class="h-11" />
         {/if}
       </Field>
     </div>
     {#if range && range.end !== null}
       <p class="-mt-2 text-sm text-muted-foreground">
         {m.duration()}:
-        <span class="tabular font-medium text-foreground">{formatDuration(range.end - range.start)}</span>
+        <span class="font-medium text-foreground tabular">{formatDuration(range.end - range.start)}</span>
         {#if toDateKey(range.end) !== date}· {m.next_day()}{/if}
       </p>
     {/if}

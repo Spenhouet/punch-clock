@@ -72,7 +72,7 @@
 
 <PageHeader title={m.working_hours()} back={resolve('/settings')} />
 
-<div class="flex flex-col gap-6 pb-4">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   <Group
     title={schedules.length > 1
       ? m.schedule_from({
@@ -95,10 +95,10 @@
     {#each schedules as s (s.id)}
       <div class="flex min-h-14 items-center gap-2 px-4 py-2">
         <button type="button" class="flex flex-1 flex-col text-left" onclick={() => (editingId = s.id)}>
-          <span class="text-[15px] {s.id === current.id ? 'font-semibold text-primary' : ''}">
+          <span class="text-body {s.id === current.id ? 'font-semibold text-primary' : ''}">
             {s.validFrom === '1970-01-01' ? m.schedule_initial() : m.since_date({ date: formatDate(s.validFrom, 'P') })}
           </span>
-          <span class="tabular text-xs text-muted-foreground"
+          <span class="text-xs text-muted-foreground tabular"
             >{m.hours_per_week({ hours: formatMinutes(s.minutesPerWeekday.reduce((a, b) => a + b, 0)) })}</span
           >
         </button>
