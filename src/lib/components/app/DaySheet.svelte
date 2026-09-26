@@ -2,7 +2,7 @@
   import { m } from '$lib/paraglide/messages.js';
   import StatTile from './StatTile.svelte';
   import Notice from './Notice.svelte';
-  import { ChevronLeft, ChevronRight, Plus, CalendarOff } from '@lucide/svelte';
+  import { ChevronLeft, ChevronRight, Plus, CalendarOff, Target } from '@lucide/svelte';
   import Sheet from './Sheet.svelte';
   import SegmentList from './SegmentList.svelte';
   import Delta from './Delta.svelte';
@@ -10,7 +10,8 @@
   import { Textarea } from '$lib/components/ui/textarea';
   import { ui } from '$lib/ui.svelte';
   import { app } from '$lib/state.svelte';
-  import { setNote } from '$lib/db/entries';
+  import { fillWithTarget, setNote } from '$lib/db/entries';
+  import { toast } from 'svelte-sonner';
   import { addDaysKey, atTime, HOUR } from '$lib/domain/time';
   import { formatDate, formatMinutes } from '$lib/format';
   import { absenceBg, absenceLabel, warningLabel } from '$lib/labels';
@@ -40,16 +41,21 @@
   function addEntry() {
     if (!day) return;
     const last = day.segments.at(-1);
-    const start = last?.end ?? atTime(day.date, '08:00');
+    const start = last?.end ?? atTime(day.date, app.ledger!.settings.defaultStart);
     ui.editSegment({ kind: 'work', start, end: start + HOUR, source: 'manual' });
   }
 
   $effect(() => {
     if (!ui.dayOpen) saveNote();
   });
+
+  async function addTarget() {
+    if (!day || !app.ledger) return;
+    if (await fillWithTarget([day.date], app.ledger)) toast.success(m.saved());
+  }
 </script>
 
-<Sheet bind:open={ui.dayOpen} title={day ? formatDate(day.date, 'EEEE, d. MMM yyyy') : ''}>
+<Sheet bind:open={ui.dayOpen} title={day ? formatDate(day.date, 'EEE, d. MMM yyyy') : ''}>
   {#snippet header()}
     <Button variant="ghost" size="icon-sm" onclick={() => go(-1)} aria-label={m.previous()}><ChevronLeft /></Button>
     <Button variant="ghost" size="icon-sm" onclick={() => go(1)} aria-label={m.next()}><ChevronRight /></Button>
@@ -84,6 +90,13 @@
         </div>
         {#if day.segments.length}
           <div class="-mx-2"><SegmentList segments={day.segments} /></div>
+        {:else if day.target > 0 && day.date <= app.ledger!.today}
+          <Button variant="secondary" class="mt-1 w-full" onclick={addTarget}>
+            <Target />{m.add_target_time({ hours: formatMinutes(day.target) })}
+          </Button>
+          <p class="mt-1.5 text-xs text-muted-foreground">
+            {m.add_target_time_hint({ time: app.ledger!.settings.defaultStart })}
+          </p>
         {:else}
           <p class="py-2 text-sm text-muted-foreground">{m.no_entries()}</p>
         {/if}

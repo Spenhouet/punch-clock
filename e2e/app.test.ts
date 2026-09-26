@@ -54,7 +54,7 @@ test('add and edit an entry by hand', async ({ page }) => {
   await setup(page);
   await page.goto('/calendar');
   await page.locator('[data-date="2026-09-22"]').click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Add', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'New entry' });
   await sheet.getByLabel('From').fill('09:00');
   await sheet.getByLabel('To').fill('17:30');
@@ -147,4 +147,86 @@ test('desktop uses the sidebar and its mini clock', async ({ page }) => {
   await sidebar.getByRole('button', { name: 'Clock in' }).click();
   await expect(sidebar.getByText('Working')).toBeVisible();
   await expect(page.locator('[data-date="2026-09-23"]').first()).toBeVisible();
+});
+
+test('manual entry with a break duration and target time', async ({ page }) => {
+  await setup(page);
+  await page.goto('/calendar?view=week&d=2026-09-21');
+  await page.locator('[data-date="2026-09-21"]').click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Add', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'New entry' });
+  await sheet.getByLabel('From').fill('08:00');
+  await sheet.getByRole('button', { name: 'Target time (8:00)' }).click();
+  await expect(sheet.getByLabel('To')).toHaveValue('16:30');
+  await expect(sheet.getByText('Duration: 8:00')).toBeVisible();
+  await sheet.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('dialog').getByText('30 min break')).toBeVisible();
+});
+
+test('fill past days with their target time', async ({ page }) => {
+  await setup(page);
+  await page.goto('/calendar?view=week&d=2026-09-14');
+  await page.getByRole('button', { name: 'Select' }).click();
+  for (const d of ['2026-09-14', '2026-09-15', '2026-09-19']) await page.locator(`[data-date="${d}"]`).click();
+  // Saturday has no target, so only two days get filled
+  await page.getByRole('button', { name: 'Target time (2)' }).click();
+  await expect(page.getByText('Target time added for 2 day(s)')).toBeVisible();
+  await expect(page.locator('[data-date="2026-09-14"]')).toContainText('8:00');
+  await expect(page.locator('[data-date="2026-09-14"]')).toContainText('+0:00');
+});
+
+test('typing an absence label keeps the text', async ({ page }) => {
+  await setup(page);
+  await page.goto('/calendar?view=week&d=2026-09-28');
+  await page.locator('[data-date="2026-09-28"]').click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark' }).click();
+  const label = page.getByPlaceholder('e.g. Summer trip');
+  await label.pressSequentially('Summer', { delay: 50 });
+  await page.clock.fastForward('00:00:03');
+  await label.pressSequentially(' trip', { delay: 50 });
+  await expect(label).toHaveValue('Summer trip');
+});
+
+async function swipeLeft(page: Page, selector: string) {
+  await page
+    .locator(selector)
+    .first()
+    .evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const y = r.top + 40;
+      const touch = (x: number) => new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
+      el.dispatchEvent(
+        new TouchEvent('touchstart', { touches: [touch(300)], changedTouches: [touch(300)], bubbles: true })
+      );
+      el.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [touch(120)], bubbles: true }));
+    });
+}
+
+test('swiping changes the period in calendar and stats', async ({ page }) => {
+  await setup(page);
+  await page.goto('/calendar?view=month&d=2026-09-01');
+  await expect(page.getByText('September 2026')).toBeVisible();
+  await swipeLeft(page, '[data-date="2026-09-10"]');
+  await expect(page.getByText('October 2026')).toBeVisible();
+
+  await page.goto('/stats?view=month&d=2026-09-01');
+  await expect(page.getByText('September 2026')).toBeVisible();
+  await swipeLeft(page, 'main section');
+  await expect(page.getByText('October 2026')).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.getByText('September 2026')).toBeVisible();
+});
+
+test('long press on a day starts selection', async ({ page }) => {
+  await setup(page);
+  await page.goto('/calendar?view=month&d=2026-10-01');
+  const day = page.locator('[data-date="2026-10-12"]');
+  await day.hover();
+  await page.mouse.down();
+  await page.clock.runFor(700);
+  await page.mouse.up();
+  await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.locator('[data-date="2026-10-13"]').click();
+  await expect(page.getByRole('button', { name: 'Mark 2 days' })).toBeVisible();
 });

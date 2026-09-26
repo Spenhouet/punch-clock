@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { longpress } from '$lib/actions/longpress';
   import { m } from '$lib/paraglide/messages.js';
   import { Check, MessageSquareText, TriangleAlert } from '@lucide/svelte';
   import Delta from '$lib/components/app/Delta.svelte';
@@ -15,9 +16,16 @@
     today,
     selecting,
     selected,
-    onday
-  }: { days: DaySummary[]; today: string; selecting: boolean; selected: Set<string>; onday: (d: string) => void } =
-    $props();
+    onday,
+    onlongpress
+  }: {
+    days: DaySummary[];
+    today: string;
+    selecting: boolean;
+    selected: Set<string>;
+    onday: (d: string) => void;
+    onlongpress?: (d: string) => void;
+  } = $props();
 
   const range = $derived.by(() => {
     let from = 7 * 60;
@@ -45,6 +53,7 @@
         type="button"
         data-date={d.date}
         onclick={() => onday(d.date)}
+        use:longpress={selecting ? undefined : () => onlongpress?.(d.date)}
         class={cn(
           'flex flex-col items-center rounded-xl py-2 transition-colors hover:bg-muted',
           isSel && 'bg-primary/15 ring-2 ring-primary'
@@ -75,6 +84,7 @@
       <button
         type="button"
         onclick={() => onday(d.date)}
+        use:longpress={selecting ? undefined : () => onlongpress?.(d.date)}
         class={cn(
           'relative h-128 overflow-hidden rounded-xl text-left transition-colors hover:bg-muted/60',
           d.isWorkday ? 'bg-muted/40' : 'bg-transparent',

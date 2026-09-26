@@ -125,7 +125,7 @@ Component rules (enforced by `shadcn/no-restyle`):
 
 - Below `md`: bottom tab bar (Today, Calendar, Stats, Settings), sheets slide up from the bottom.
 - From `md`: left sidebar with the same four entries and a mini clock (status, timer, clock buttons) on every page except Today. Sheets are centered dialogs.
-- Calendar and stats keep the period in the URL (`?view=month&d=2026-09-01`). Swiping left and right changes the period on touch devices, tapping the title jumps to today.
+- Calendar and stats keep the period in the URL (`?view=month&d=2026-09-01`). Swiping left and right (or the arrow keys on desktop) changes the period, tapping the title jumps to today. Long press on a day starts multi-select.
 - The Android back button closes an open sheet first, then goes back, then leaves the app.
 
 ## Content

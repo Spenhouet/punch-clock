@@ -7,7 +7,7 @@ export const tabs = [
   { href: '/', label: () => m.tab_today(), icon: Timer },
   { href: '/calendar', label: () => m.tab_calendar(), icon: CalendarDays },
   { href: '/stats', label: () => m.tab_stats(), icon: ChartColumn },
-  { href: '/settings', label: () => m.tab_settings(), icon: Settings }
+  { href: '/settings', label: () => m.tab_settings(), short: () => m.tab_settings_short(), icon: Settings }
 ] as const;
 
 export function isActive(href: string) {

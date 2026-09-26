@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { longpress } from '$lib/actions/longpress';
   import type { Ledger } from '$lib/domain/calc';
   import { addDaysKey, daysBetween, periodOf, type Period } from '$lib/domain/time';
   import { formatDate, formatMinutes, toHHmm } from '$lib/format';
@@ -11,7 +12,8 @@
     selecting,
     selected,
     onday,
-    ondrag
+    ondrag,
+    onlongpress
   }: {
     ledger: Ledger;
     period: Period;
@@ -19,6 +21,7 @@
     selected: Set<string>;
     onday: (d: string) => void;
     ondrag: (dates: string[]) => void;
+    onlongpress?: (d: string) => void;
   } = $props();
 
   const cells = $derived.by(() => {
@@ -81,6 +84,7 @@
         type="button"
         data-date={date}
         onclick={() => click(date)}
+        use:longpress={selecting ? undefined : () => onlongpress?.(date)}
         class={cn(
           'relative flex aspect-4/5 flex-col items-center justify-start overflow-hidden rounded-xl pt-1.5 text-sm transition-colors hover:bg-muted md:aspect-auto md:h-24 md:items-start md:px-2',
           !inMonth && 'opacity-35',

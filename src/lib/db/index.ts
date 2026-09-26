@@ -51,6 +51,7 @@ export function defaultSettings(): Settings {
     state: 'none',
     trackingStart: todayKey(),
     breakPresets: [15, 30, 45, 60],
+    defaultStart: '08:00',
     rounding: 0,
     roundingMode: 'nearest',
     autoBreak: false,

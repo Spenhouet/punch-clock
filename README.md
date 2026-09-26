@@ -24,7 +24,7 @@
 - **Vacation account** with entitlement per year, automatic carry-over, an expiry date for carried-over days, and days taken, planned, and left.
 - **Overtime balance** with a starting value, a "set balance" action for moving from another tool, and corrections such as paid-out overtime.
 - **Comments** per entry and per day.
-- **Full manual editing.** Add, change and delete entries and absences, with undo.
+- **Full manual editing.** Add, change and delete entries and absences, with undo. A manual entry can carry a break duration without exact break times, and days without known times can be filled with their target time in one tap (also for several days at once).
 - **Week, month and year views** with swipe navigation.
 - **Stats**: worked vs. target, balance over time, averages, absences.
 - **Export** as a PDF timesheet with signature lines, CSV per day or per entry (Excel-friendly in German), and iCal for absences.

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { m } from '$lib/paraglide/messages.js';
   import { toast } from 'svelte-sonner';
   import { Check } from '@lucide/svelte';
@@ -29,9 +30,11 @@
     type === 'vacation' ? targetDates.filter((d) => ledger.day(d).isWorkday).length * Number(fraction) : 0
   );
 
+  // Initialize once per opening; the ledger changes every second and must not reset the form
   $effect(() => {
     if (!ui.absenceOpen) return;
-    const first = ui.absenceDates.map((d) => app.ledger!.day(d).absences[0]).find(Boolean);
+    const dates = ui.absenceDates;
+    const first = untrack(() => dates.map((d) => app.ledger!.day(d).absences[0]).find(Boolean));
     type = first?.type ?? 'vacation';
     fraction = first?.fraction === 0.5 ? '0.5' : '1';
     label = first?.label ?? '';

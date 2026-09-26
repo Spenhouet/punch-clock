@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { longpress } from '$lib/actions/longpress';
   import { m } from '$lib/paraglide/messages.js';
   import { Check, MessageSquareText, TriangleAlert } from '@lucide/svelte';
   import Delta from '$lib/components/app/Delta.svelte';
@@ -12,9 +13,16 @@
     today,
     selecting,
     selected,
-    onday
-  }: { days: DaySummary[]; today: string; selecting: boolean; selected: Set<string>; onday: (d: string) => void } =
-    $props();
+    onday,
+    onlongpress
+  }: {
+    days: DaySummary[];
+    today: string;
+    selecting: boolean;
+    selected: Set<string>;
+    onday: (d: string) => void;
+    onlongpress?: (d: string) => void;
+  } = $props();
 </script>
 
 <ul class="flex flex-col gap-1.5">
@@ -25,6 +33,7 @@
       <button
         type="button"
         onclick={() => onday(d.date)}
+        use:longpress={selecting ? undefined : () => onlongpress?.(d.date)}
         data-date={d.date}
         class={cn(
           'flex w-full items-center gap-3 surface px-3 py-3 text-left transition-colors hover:bg-muted/60',
