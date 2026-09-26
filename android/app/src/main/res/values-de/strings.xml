@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="channel_clock_name">Laufende Stempeluhr</string>
+    <string name="channel_clock_description">Dauerhafte Benachrichtigung mit der laufenden Arbeitszeit</string>
+    <string name="channel_wifi_name">WLAN ein-/ausstempeln</string>
+    <string name="channel_wifi_description">Rückfragen und Bestätigungen beim Verbinden mit oder Verlassen des Arbeits-WLANs</string>
+
+    <string name="notif_working">Arbeitet</string>
+    <string name="notif_on_break">In Pause</string>
+    <string name="notif_since">Seit %s</string>
+    <string name="notif_until">Bis %s</string>
+
+    <string name="action_break">Pause</string>
+    <string name="action_resume">Weiter</string>
+    <string name="action_clock_out">Ausstempeln</string>
+    <string name="action_clock_in">Einstempeln</string>
+    <string name="action_dismiss">Verwerfen</string>
+
+    <string name="wifi_prompt_in">Mit %s verbunden. Einstempeln?</string>
+    <string name="wifi_prompt_out">%1$s um %2$s verlassen. Ausstempeln?</string>
+    <string name="wifi_clocked_in">Um %1$s eingestempelt (%2$s)</string>
+    <string name="wifi_clocked_out">Um %1$s ausgestempelt (%2$s verlassen)</string>
+</resources>

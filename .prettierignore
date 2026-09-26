@@ -1,0 +1,9 @@
+bun.lock
+build
+.svelte-kit
+src/lib/paraglide
+android
+static
+messages
+test-results
+playwright-report
