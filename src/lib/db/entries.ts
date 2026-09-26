@@ -1,4 +1,5 @@
-import { toDateKey } from '$lib/domain/time';
+import { atTime, toDateKey } from '$lib/domain/time';
+import { requiredBreak, type Ledger } from '$lib/domain/calc';
 import type {
   Absence,
   AbsenceType,
@@ -79,4 +80,30 @@ export async function deleteSchedule(id: string, database = db) {
 
 export async function saveVacationYear(v: VacationYear, database = db) {
   await database.vacationYears.put(v);
+}
+
+/**
+ * Record the regular target time on days without entries, starting at the
+ * usual start time with the legal minimum break. For days whose real times
+ * are unknown. Returns the number of filled days.
+ */
+export async function fillWithTarget(dates: DateKey[], ledger: Ledger, database = db): Promise<number> {
+  const segments: Segment[] = [];
+  for (const date of dates) {
+    const day = ledger.day(date);
+    if (day.segments.length || day.target <= 0) continue;
+    const brk = requiredBreak(day.target);
+    const start = atTime(date, ledger.settings.defaultStart);
+    segments.push({
+      id: crypto.randomUUID(),
+      date,
+      kind: 'work',
+      start,
+      end: start + (day.target + brk) * 60_000,
+      breakMinutes: brk || undefined,
+      source: 'manual'
+    });
+  }
+  if (segments.length) await database.segments.bulkAdd(segments);
+  return segments.length;
 }

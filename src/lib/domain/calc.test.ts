@@ -65,6 +65,14 @@ describe('day summary', () => {
     expect(d.warnings).toEqual([]);
   });
 
+  it('subtracts an unplaced break from a work entry', () => {
+    const seg = { ...work('2026-09-21', '08:00', '16:30'), breakMinutes: 30 };
+    const d = new Ledger(data({ segments: [seg] }), NOW).day('2026-09-21');
+    expect(d.gross).toBe(480);
+    expect(d.pause).toBe(30);
+    expect(d.warnings).toEqual([]);
+  });
+
   it('counts a running segment until now', () => {
     const l = new Ledger(data({ segments: [work('2026-09-25', '10:00', null)] }), NOW);
     expect(l.day('2026-09-25').gross).toBe(480);
@@ -163,12 +171,19 @@ describe('balance', () => {
     expect(comp.balanceNow()).toBe(-480);
   });
 
-  it('ignores days before tracking start', () => {
+  it('counts days before tracking start only when something was recorded', () => {
     const l = new Ledger(
-      data({ settings: { trackingStart: '2026-09-24' }, segments: [work('2026-09-21', '08:00', '20:00')] }),
+      data({
+        settings: { trackingStart: '2026-09-24' },
+        segments: [work('2026-09-21', '08:00', '20:00')],
+        absences: [absence('2026-09-22', 'comp_time')]
+      }),
       NOW
     );
-    expect(l.balanceAt('2026-09-23')).toBe(0);
+    expect(l.day('2026-09-21').counted).toBe(true);
+    expect(l.day('2026-09-23').counted).toBe(false);
+    // +4:00 on Monday, -8:00 comp time on Tuesday, Wednesday not recorded
+    expect(l.balanceAt('2026-09-23')).toBe(-240);
   });
 });
 

@@ -189,7 +189,7 @@ export class Ledger {
     for (const s of segments) {
       const end = this.end(s);
       if (s.end === null) running = true;
-      if (s.kind === 'work') gross += (end - s.start) / MINUTE;
+      if (s.kind === 'work') gross += Math.max(0, (end - s.start) / MINUTE - (s.breakMinutes ?? 0));
       if (first === undefined || s.start < first) first = s.start;
       if (last === undefined || end > last) last = end;
       if (s.start < prevEnd - MINUTE / 2) overlap = true;
@@ -200,7 +200,9 @@ export class Ledger {
     const pause = Math.max(0, span - gross);
     const autoDeducted = this.settings.autoBreak && !running ? autoBreakDeduction(gross, pause) : 0;
     const worked = gross - autoDeducted;
-    const counted = date >= this.settings.trackingStart && date <= this.today;
+    // Days before tracking start only count when something was recorded for them
+    const counted =
+      date <= this.today && (date >= this.settings.trackingStart || segments.length > 0 || absences.length > 0);
 
     const warnings: Warning[] = [];
     if (this.settings.warnings) {
@@ -258,9 +260,16 @@ export class Ledger {
     return day.delta;
   }
 
-  /** Earliest day relevant for the balance. */
+  /** Earliest day relevant for the balance: tracking start or the first recorded day before it. */
+  private _balanceStart?: DateKey;
   private get balanceStart(): DateKey {
-    return this.settings.trackingStart;
+    if (this._balanceStart === undefined) {
+      let start = this.settings.trackingStart;
+      for (const d of this.segmentsByDate.keys()) if (d < start) start = d;
+      for (const d of this.absencesByDate.keys()) if (d < start) start = d;
+      this._balanceStart = start;
+    }
+    return this._balanceStart;
   }
 
   /** Balance at the end of `date`, counting every day in full. */

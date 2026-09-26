@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { resolve } from '$app/paths';
   import { m } from '$lib/paraglide/messages.js';
   import { toast } from 'svelte-sonner';
@@ -18,7 +19,8 @@
   const balance = $derived(ledger.balanceNow());
   const adjustments = $derived([...ledger.data.adjustments].sort((a, b) => b.date.localeCompare(a.date)));
 
-  let desired = $derived(Math.round(balance));
+  // Start from the current balance once; the live balance must not overwrite what the user types
+  let desired = $state(untrack(() => Math.round(balance)));
 
   async function setBalance() {
     const diff = Math.round(desired - balance);

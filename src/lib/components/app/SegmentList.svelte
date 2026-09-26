@@ -33,13 +33,14 @@
           </span>
           <span class="flex items-center gap-1 truncate text-xs text-muted-foreground">
             {s.kind === 'work' ? m.kind_work() : m.kind_break()}
+            {#if s.breakMinutes}· {m.break_included({ minutes: s.breakMinutes })}{/if}
             {#if s.source === 'wifi'}<Wifi class="size-3" />{/if}
             {#if s.source === 'notification'}<Bell class="size-3" />{/if}
             {#if s.note}<MessageSquareText class="size-3" /> <span class="truncate">{s.note}</span>{/if}
           </span>
         </span>
         <span class={cn('text-sm tabular', s.end === null && 'font-semibold text-primary')}>
-          {formatDuration(end - s.start)}
+          {formatDuration(end - s.start - (s.breakMinutes ?? 0) * 60_000)}
         </span>
       </button>
     </li>

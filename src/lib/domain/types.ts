@@ -24,6 +24,8 @@ export interface Segment {
   rawEnd?: Timestamp;
   /** Timed break: ends by itself at this point. */
   plannedEnd?: Timestamp;
+  /** Work only: break taken somewhere inside this entry, when its exact time is unknown. */
+  breakMinutes?: number;
   note?: string;
   source: SegmentSource;
 }
@@ -87,6 +89,8 @@ export interface Settings {
   /** Days before this date do not count toward the balance. */
   trackingStart: DateKey;
   breakPresets: number[];
+  /** Usual start of the working day, used when filling a day with its target time. */
+  defaultStart: string;
   rounding: Rounding;
   roundingMode: RoundingMode;
   autoBreak: boolean;

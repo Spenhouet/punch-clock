@@ -1,10 +1,14 @@
 <script lang="ts">
   import { m } from '$lib/paraglide/messages.js';
-  import { Trash2 } from '@lucide/svelte';
+  import { Trash2, Target } from '@lucide/svelte';
   import { toast } from 'svelte-sonner';
   import Sheet from './Sheet.svelte';
   import Segmented from './Segmented.svelte';
   import Field from './Field.svelte';
+  import HoursInput from './HoursInput.svelte';
+  import { app } from '$lib/state.svelte';
+  import { requiredBreak } from '$lib/domain/calc';
+  import { formatMinutes } from '$lib/format';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Textarea } from '$lib/components/ui/textarea';
@@ -18,6 +22,7 @@
   let from = $state('08:00');
   let to = $state('');
   let note = $state('');
+  let breakMin = $state(0);
   let isRunning = $state(false);
   let error = $state('');
 
@@ -33,6 +38,7 @@
     isRunning = s.id !== undefined && s.end === null;
     to = s.end ? toHHmm(s.end) : toHHmm(Date.now());
     note = s.note ?? '';
+    breakMin = s.breakMinutes ?? 0;
     error = '';
   });
 
@@ -47,8 +53,20 @@
     return { start, end };
   });
 
+  const target = $derived(date && app.ledger ? app.ledger.day(date).target : 0);
+  const net = $derived(
+    range && range.end !== null ? (range.end - range.start) / 60_000 - (kind === 'work' ? breakMin : 0) : 0
+  );
+
+  /** Fill the entry so the day's target is met, with the legal minimum break. */
+  function useTarget() {
+    const brk = requiredBreak(target);
+    breakMin = brk;
+    to = toHHmm(atTime(date, from) + (target + brk) * 60_000);
+  }
+
   async function save() {
-    if (!range) {
+    if (!range || (range.end !== null && net <= 0)) {
       error = m.error_times();
       return;
     }
@@ -62,6 +80,7 @@
       start: range.start,
       end: range.end,
       note: note.trim() || undefined,
+      breakMinutes: kind === 'work' && breakMin > 0 ? breakMin : undefined,
       source: existing?.source ?? 'manual',
       plannedEnd: isRunning ? existing?.plannedEnd : undefined
     });
@@ -102,10 +121,22 @@
         {/if}
       </Field>
     </div>
+    {#if kind === 'work' && !isRunning}
+      <Field label={m.break_unplaced()} hint={m.break_unplaced_hint()}>
+        <div class="flex items-center gap-2">
+          <HoursInput bind:minutes={breakMin} />
+          {#if target > 0}
+            <Button variant="secondary" class="flex-1" onclick={useTarget}>
+              <Target />{m.use_target({ hours: formatMinutes(target) })}
+            </Button>
+          {/if}
+        </div>
+      </Field>
+    {/if}
     {#if range && range.end !== null}
       <p class="-mt-2 text-sm text-muted-foreground">
         {m.duration()}:
-        <span class="font-medium text-foreground tabular">{formatDuration(range.end - range.start)}</span>
+        <span class="font-medium text-foreground tabular">{formatDuration(net * 60_000)}</span>
         {#if toDateKey(range.end) !== date}· {m.next_day()}{/if}
       </p>
     {/if}

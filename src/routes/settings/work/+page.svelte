@@ -129,6 +129,20 @@
     </div>
   </Group>
 
+  <Group title={m.default_start()} footer={m.default_start_hint()}>
+    <div class="px-4 py-3">
+      <Input
+        type="time"
+        value={settings.defaultStart}
+        onchange={(e) => {
+          const v = (e.target as HTMLInputElement).value;
+          if (v) saveSettings({ defaultStart: v });
+        }}
+        class="h-10"
+      />
+    </div>
+  </Group>
+
   <Group title={m.tracking_start()} footer={m.tracking_start_hint()}>
     <div class="px-4 py-3">
       <Input

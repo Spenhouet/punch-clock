@@ -36,7 +36,7 @@
               ></span>
             {/if}
           </span>
-          {tab.label()}
+          <span class="max-w-full truncate px-1">{'short' in tab ? tab.short() : tab.label()}</span>
         </a>
       </li>
     {/each}

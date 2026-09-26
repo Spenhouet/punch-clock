@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Ledger } from '$lib/domain/calc';
   import { daysBetween, periodOf } from '$lib/domain/time';
-  import { formatDate } from '$lib/format';
+  import { formatDate, formatMinutes } from '$lib/format';
   import { absenceBg } from '$lib/labels';
   import { cn } from '$lib/utils';
 
@@ -36,7 +36,7 @@
         {#each mo.days as date (date)}
           <span
             class={cn('aspect-square rounded-xs', cellClass(date), date === ledger.today && 'ring-1 ring-foreground')}
-            title={date}
+            title={`${formatDate(date, 'EEE, d. MMM')}${ledger.day(date).counted && (ledger.day(date).target || ledger.day(date).worked) ? ` · ${formatMinutes(ledger.day(date).delta, { sign: true })}` : ''}`}
           ></span>
         {/each}
       </div>
