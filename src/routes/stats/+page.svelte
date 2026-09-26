@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { m } from '$lib/paraglide/messages.js';
+  import StatTile from '$lib/components/app/StatTile.svelte';
   import { FileText, Sheet as SheetIcon, CalendarPlus, Table } from '@lucide/svelte';
   import { toast } from 'svelte-sonner';
   import PageHeader from '$lib/components/app/PageHeader.svelte';
@@ -112,41 +113,44 @@
 
 <PageHeader title={m.tab_stats()} />
 
-<div class="flex flex-col gap-3" use:swipe={{ onLeft: () => shift(1), onRight: () => shift(-1) }}>
+<div class="grid gap-3 md:grid-cols-2 md:gap-4" use:swipe={{ onLeft: () => shift(1), onRight: () => shift(-1) }}>
   <div
-    class="flex items-center justify-between rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-lg shadow-primary/20"
+    class="flex items-center justify-between rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-lg shadow-primary/20 md:col-span-2"
   >
     <div>
       <p class="text-sm opacity-80">{m.balance_current()}</p>
-      <p class="tabular text-3xl font-semibold tracking-tight">{formatMinutes(balance, { sign: true })}</p>
+      <p class="text-3xl font-semibold tracking-tight tabular">{formatMinutes(balance, { sign: true })}</p>
     </div>
     <div class="text-right">
       <p class="text-sm opacity-80">{m.vacation_left()}</p>
-      <p class="tabular text-3xl font-semibold tracking-tight">
+      <p class="text-3xl font-semibold tracking-tight tabular">
         {formatNumber(ledger.vacation(Number(ledger.today.slice(0, 4))).left)}
       </p>
     </div>
   </div>
 
-  <Segmented
-    value={view}
-    options={[
-      { value: 'week', label: m.view_week() },
-      { value: 'month', label: m.view_month() },
-      { value: 'year', label: m.view_year() }
-    ]}
-    onchange={(v) => navigate(v, anchor)}
-  />
-  <PeriodNav {period} onshift={shift} ontoday={() => navigate(view, ledger.today)} />
-  <SummaryStrip {summary} />
+  <div class="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:gap-6">
+    <Segmented
+      class="md:w-80"
+      value={view}
+      options={[
+        { value: 'week', label: m.view_week() },
+        { value: 'month', label: m.view_month() },
+        { value: 'year', label: m.view_year() }
+      ]}
+      onchange={(v) => navigate(v, anchor)}
+    />
+    <div class="md:flex-1"><PeriodNav {period} onshift={shift} ontoday={() => navigate(view, ledger.today)} /></div>
+  </div>
+  <div class="md:col-span-2"><SummaryStrip {summary} /></div>
 
-  <section class="rounded-2xl bg-card p-4 shadow-xs ring-1 ring-border">
+  <section class="surface p-4 md:col-span-2">
     <h2 class="text-sm font-medium">{m.worked_vs_target()}</h2>
     <BarChart {bars} valueLabel={m.worked()} targetLabel={m.target()} />
   </section>
 
   {#if balancePoints.length > 1}
-    <section class="rounded-2xl bg-card p-4 shadow-xs ring-1 ring-border">
+    <section class="surface p-4">
       <h2 class="text-sm font-medium">{m.balance_over_time()}</h2>
       <LineChart points={balancePoints} label={m.balance()} />
       <div class="mt-2 flex justify-between text-xs text-muted-foreground">
@@ -156,64 +160,64 @@
     </section>
   {/if}
 
-  <section class="grid grid-cols-2 gap-2">
+  <section class="grid grid-cols-2 gap-2 md:content-start">
     {#each [{ label: m.days_worked(), value: String(summary.daysWorked) }, { label: m.avg_per_day(), value: summary.avgWorked !== undefined ? formatMinutes(summary.avgWorked) : '–' }, { label: m.avg_start(), value: summary.avgStart !== undefined ? formatClock(summary.avgStart) : '–' }, { label: m.avg_end(), value: summary.avgEnd !== undefined ? formatClock(summary.avgEnd) : '–' }, { label: m.pause_total(), value: formatMinutes(summary.pause) }, { label: m.holidays(), value: String(summary.holidays) }] as tile (tile.label)}
-      <div class="rounded-2xl bg-card p-3 shadow-xs ring-1 ring-border">
-        <p class="text-xs text-muted-foreground">{tile.label}</p>
-        <p class="tabular text-lg font-semibold">{tile.value}</p>
-      </div>
+      <StatTile label={tile.label} value={tile.value} />
     {/each}
   </section>
 
-  <section class="rounded-2xl bg-card p-4 shadow-xs ring-1 ring-border">
+  <section class="surface p-4">
     <div class="flex items-baseline justify-between">
       <h2 class="text-sm font-medium">{m.vacation_year({ year })}</h2>
-      <span class="tabular text-sm text-muted-foreground"
+      <span class="text-sm text-muted-foreground tabular"
         >{m.vacation_left_of({ left: formatNumber(vacation.left), total: formatNumber(vacTotal) })}</span
       >
     </div>
     <div class="mt-3 flex h-3 overflow-hidden rounded-full bg-muted">
-      <div class="h-full bg-vacation" style="width: {vacTotal ? (vacation.taken / vacTotal) * 100 : 0}%"></div>
       <div
-        class="h-full border-l-2 border-card bg-vacation/40"
-        style="width: {vacTotal ? (vacation.planned / vacTotal) * 100 : 0}%"
+        class="h-full w-(--fill) bg-vacation"
+        style="--fill: {vacTotal ? (vacation.taken / vacTotal) * 100 : 0}%"
+      ></div>
+      <div
+        class="h-full w-(--fill) border-l-2 border-card bg-vacation/40"
+        style="--fill: {vacTotal ? (vacation.planned / vacTotal) * 100 : 0}%"
       ></div>
     </div>
     <div class="mt-3 grid grid-cols-2 gap-y-1 text-sm">
-      <span class="text-muted-foreground">{m.entitlement()}</span><span class="tabular text-right"
+      <span class="text-muted-foreground">{m.entitlement()}</span><span class="text-right tabular"
         >{formatNumber(vacation.entitlement)}</span
       >
-      <span class="text-muted-foreground">{m.carry_over()}</span><span class="tabular text-right"
+      <span class="text-muted-foreground">{m.carry_over()}</span><span class="text-right tabular"
         >{formatNumber(vacation.carryOver)}</span
       >
       {#if vacation.carryOverLost}
-        <span class="text-muted-foreground">{m.carry_over_lost()}</span><span class="tabular text-right text-negative"
+        <span class="text-muted-foreground">{m.carry_over_lost()}</span><span class="text-right text-negative tabular"
           >−{formatNumber(vacation.carryOverLost)}</span
         >
       {/if}
       <span class="flex items-center gap-1.5 text-muted-foreground"
         ><span class="size-2 rounded-full bg-vacation"></span>{m.taken()}</span
-      ><span class="tabular text-right">{formatNumber(vacation.taken)}</span>
+      ><span class="text-right tabular">{formatNumber(vacation.taken)}</span>
       <span class="flex items-center gap-1.5 text-muted-foreground"
         ><span class="size-2 rounded-full bg-vacation/40"></span>{m.planned()}</span
-      ><span class="tabular text-right">{formatNumber(vacation.planned)}</span>
+      ><span class="text-right tabular">{formatNumber(vacation.planned)}</span>
     </div>
   </section>
 
-  <section class="rounded-2xl bg-card p-4 shadow-xs ring-1 ring-border">
+  <section class="surface p-4">
     <h2 class="mb-2 text-sm font-medium">{m.absences_in_period()}</h2>
     <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
       {#each ABSENCE_TYPES as t (t)}
         <div class="flex items-center gap-2">
           <span class={cn('size-2.5 rounded-full', absenceBg[t])}></span>
           <span class="flex-1 text-muted-foreground">{absenceLabel(t)}</span>
-          <span class="tabular font-medium">{formatNumber(summary.absenceDays[t])}</span>
+          <span class="font-medium tabular">{formatNumber(summary.absenceDays[t])}</span>
         </div>
       {/each}
     </div>
   </section>
 
-  <section class="rounded-2xl bg-card p-4 shadow-xs ring-1 ring-border">
+  <section class="surface p-4">
     <h2 class="text-sm font-medium">{m.export()}</h2>
     <p class="mb-3 text-xs text-muted-foreground">{m.export_hint()}</p>
     <div class="grid grid-cols-2 gap-2">

@@ -15,7 +15,7 @@
   const overflow = $derived(Math.max(0, Math.min(1, value - 1)));
 </script>
 
-<div class="relative" style="width: {size}px; height: {size}px">
+<div class="relative size-(--ring-size)" style="--ring-size: {size}px">
   <svg width={size} height={size} class="-rotate-90">
     <circle cx={size / 2} cy={size / 2} {r} fill="none" stroke="var(--muted)" stroke-width={stroke} />
     <circle
@@ -28,7 +28,7 @@
       stroke-linecap="round"
       stroke-dasharray={c}
       stroke-dashoffset={c * (1 - clamped)}
-      class="transition-[stroke-dashoffset] duration-700"
+      class="transition-all duration-700"
     />
     {#if overflow > 0}
       <circle
@@ -41,7 +41,7 @@
         stroke-linecap="round"
         stroke-dasharray={c}
         stroke-dashoffset={c * (1 - overflow)}
-        class="transition-[stroke-dashoffset] duration-700"
+        class="transition-all duration-700"
       />
     {/if}
   </svg>

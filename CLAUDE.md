@@ -23,6 +23,10 @@ Offline, single-user time tracker. Static SvelteKit app (no server) deployed to 
 - `src/routes/`: Today (`/`), `/calendar`, `/stats`, `/settings/*`. Period and view are query params (`?view=month&d=2026-09-01`).
 - `messages/{en,de}.json`: every UI string. Add both languages for each new key.
 
+## Design
+
+Read `DESIGN.md` before touching UI. After making changes, run `bun run lint` and fix all errors; it includes the `@shadcn/lint` design rules (no raw colors, no arbitrary values, no restyling of components, no inline styles except CSS custom properties).
+
 ## Conventions
 
 - Times are epoch milliseconds, days are `YYYY-MM-DD` in local time. A segment counts toward its start day.
@@ -30,4 +34,3 @@ Offline, single-user time tracker. Static SvelteKit app (no server) deployed to 
 - Target hours are versioned by `validFrom` so history never changes.
 - Today counts toward the balance only when positive (or as far as comp time was booked); see `Ledger.contribution`.
 - Components in `src/lib/components/ui/` come from shadcn-svelte. bits-ui sets `data-state`, so use `data-[state=open]:` style variants, not `data-open:`.
-- Use the `Sheet` component for bottom sheets, `Group`/`Row` for settings lists, `Segmented` for toggles.

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { m } from '$lib/paraglide/messages.js';
+  import StatTile from '$lib/components/app/StatTile.svelte';
   import { ChevronLeft, ChevronRight } from '@lucide/svelte';
   import PageHeader from '$lib/components/app/PageHeader.svelte';
   import Group from '$lib/components/app/Group.svelte';
@@ -38,7 +39,7 @@
 
 <PageHeader title={m.vacation()} back={resolve('/settings')} />
 
-<div class="flex flex-col gap-6 pb-4">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   <div class="flex items-center gap-1">
     <Button variant="ghost" size="icon" onclick={() => year--} aria-label={m.previous()}
       ><ChevronLeft class="size-5" /></Button
@@ -49,19 +50,10 @@
     >
   </div>
 
-  <div class="grid grid-cols-3 gap-2 text-center">
-    <div class="rounded-2xl bg-card p-3 shadow-xs ring-1 ring-border">
-      <p class="text-xs text-muted-foreground">{m.taken()}</p>
-      <p class="tabular text-xl font-semibold">{formatNumber(summary.taken)}</p>
-    </div>
-    <div class="rounded-2xl bg-card p-3 shadow-xs ring-1 ring-border">
-      <p class="text-xs text-muted-foreground">{m.planned()}</p>
-      <p class="tabular text-xl font-semibold">{formatNumber(summary.planned)}</p>
-    </div>
-    <div class="rounded-2xl bg-primary p-3 text-primary-foreground shadow-xs">
-      <p class="text-xs opacity-80">{m.left()}</p>
-      <p class="tabular text-xl font-semibold">{formatNumber(summary.left)}</p>
-    </div>
+  <div class="grid grid-cols-3 gap-2">
+    <StatTile align="center" label={m.taken()} value={formatNumber(summary.taken)} />
+    <StatTile align="center" label={m.planned()} value={formatNumber(summary.planned)} />
+    <StatTile tone="primary" align="center" label={m.left()} value={formatNumber(summary.left)} />
   </div>
 
   <Group title={m.vacation_settings_year({ year })}>
@@ -143,8 +135,8 @@
         onclick={() => ui.openDay(a.date)}
       >
         <span class="size-2.5 rounded-full {absenceBg[a.type]}"></span>
-        <span class="flex-1 text-[15px]">{formatDate(a.date, 'EEE, d. MMM')}{a.label ? ` · ${a.label}` : ''}</span>
-        <span class="tabular text-sm text-muted-foreground">
+        <span class="flex-1 text-body">{formatDate(a.date, 'EEE, d. MMM')}{a.label ? ` · ${a.label}` : ''}</span>
+        <span class="text-sm text-muted-foreground tabular">
           {d.isWorkday ? formatNumber(a.fraction) : m.not_counted()}
         </span>
       </button>

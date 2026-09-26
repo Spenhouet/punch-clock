@@ -86,7 +86,7 @@
 
 <PageHeader title={m.notifications_and_wifi()} back={resolve('/settings')} />
 
-<div class="flex flex-col gap-6 pb-4">
+<div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   {#if !isNative}
     <div class="flex gap-3 rounded-2xl bg-primary/10 p-4 text-sm">
       <Smartphone class="size-5 shrink-0 text-primary" />
@@ -114,7 +114,7 @@
       <Switch checked={settings.notifications} disabled={!isNative} onCheckedChange={setNotifications} />
     </Row>
     <div class="flex items-center gap-3 px-4 py-3">
-      <span class="flex-1 text-[15px]">{m.reminder()}</span>
+      <span class="flex-1 text-body">{m.reminder()}</span>
       <NativeSelect
         class="w-40"
         value={String(settings.reminderAfterMinutes)}
@@ -130,7 +130,7 @@
     </Row>
     {#if settings.wifi.enabled}
       <div class="flex flex-col gap-2 px-4 py-3">
-        <label for="ssid" class="text-[15px]">{m.wifi_network()}</label>
+        <label for="ssid" class="text-body">{m.wifi_network()}</label>
         <div class="flex gap-2">
           <Input
             id="ssid"
@@ -143,7 +143,7 @@
         </div>
       </div>
       <div class="flex flex-col gap-2 px-4 py-3">
-        <span class="text-[15px]">{m.wifi_mode()}</span>
+        <span class="text-body">{m.wifi_mode()}</span>
         <Segmented
           value={settings.wifi.mode}
           options={[
@@ -165,7 +165,7 @@
       {#if settings.wifi.clockOutOnDisconnect}
         <div class="flex items-center gap-3 px-4 py-3">
           <span class="flex-1">
-            <span class="block text-[15px]">{m.wifi_grace()}</span>
+            <span class="block text-body">{m.wifi_grace()}</span>
             <span class="block text-xs text-muted-foreground">{m.wifi_grace_hint()}</span>
           </span>
           <NativeSelect

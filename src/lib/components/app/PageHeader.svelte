@@ -6,8 +6,7 @@
 </script>
 
 <header
-  class="sticky top-0 z-30 -mx-4 mb-2 flex h-14 items-center gap-1 bg-background/90 px-4 backdrop-blur-lg"
-  style="padding-top: env(safe-area-inset-top); box-sizing: content-box"
+  class="sticky top-0 z-30 -mx-4 mb-2 box-content flex h-14 items-center gap-1 bg-background/90 px-4 pt-safe backdrop-blur-lg md:-mx-8 md:mb-4 md:h-20 md:px-8"
 >
   {#if back}
     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
@@ -15,6 +14,6 @@
       <ChevronLeft class="size-6" />
     </a>
   {/if}
-  <h1 class="flex-1 truncate text-xl font-semibold tracking-tight">{title}</h1>
+  <h1 class="flex-1 truncate text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>
   {@render actions?.()}
 </header>

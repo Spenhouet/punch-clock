@@ -1,6 +1,8 @@
 <script lang="ts">
   import { m } from '$lib/paraglide/messages.js';
-  import { ChevronLeft, ChevronRight, Plus, CalendarOff, TriangleAlert } from '@lucide/svelte';
+  import StatTile from './StatTile.svelte';
+  import Notice from './Notice.svelte';
+  import { ChevronLeft, ChevronRight, Plus, CalendarOff } from '@lucide/svelte';
   import Sheet from './Sheet.svelte';
   import SegmentList from './SegmentList.svelte';
   import Delta from './Delta.svelte';
@@ -54,19 +56,12 @@
   {/snippet}
   {#if day}
     <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div class="rounded-xl bg-muted px-2 py-2">
-          <p class="text-xs text-muted-foreground">{m.worked()}</p>
-          <p class="tabular font-semibold">{formatMinutes(day.worked)}</p>
-        </div>
-        <div class="rounded-xl bg-muted px-2 py-2">
-          <p class="text-xs text-muted-foreground">{m.target()}</p>
-          <p class="tabular font-semibold">{formatMinutes(day.target)}</p>
-        </div>
-        <div class="rounded-xl bg-muted px-2 py-2">
-          <p class="text-xs text-muted-foreground">{m.difference()}</p>
-          <p class="font-semibold"><Delta minutes={day.delta} muted={!day.counted} /></p>
-        </div>
+      <div class="grid grid-cols-3 gap-2">
+        <StatTile tone="muted" align="center" label={m.worked()} value={formatMinutes(day.worked)} />
+        <StatTile tone="muted" align="center" label={m.target()} value={formatMinutes(day.target)} />
+        <StatTile tone="muted" align="center" label={m.difference()}>
+          <Delta minutes={day.delta} muted={!day.counted} />
+        </StatTile>
       </div>
       {#if day.pause || day.autoDeducted}
         <p class="-mt-2 text-center text-xs text-muted-foreground">
@@ -76,14 +71,10 @@
       {/if}
 
       {#if day.holiday}
-        <div class="flex items-center gap-2 rounded-xl bg-holiday/15 px-3 py-2 text-sm">
-          <span class="size-2 rounded-full bg-holiday"></span>{day.holiday}
-        </div>
+        <Notice tone="holiday" dot="bg-holiday">{day.holiday}</Notice>
       {/if}
       {#each day.warnings as w (w)}
-        <div class="flex items-center gap-2 rounded-xl bg-break/12 px-3 py-2 text-sm">
-          <TriangleAlert class="size-4 shrink-0 text-break" />{warningLabel(w)}
-        </div>
+        <Notice tone="warning">{warningLabel(w)}</Notice>
       {/each}
 
       <section>

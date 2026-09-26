@@ -137,3 +137,14 @@ test('switch language to German', async ({ page }) => {
   await page.getByRole('radio', { name: 'Deutsch' }).click();
   await expect(page.getByRole('heading', { name: 'Einstellungen' })).toBeVisible();
 });
+
+test('desktop uses the sidebar and its mini clock', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await setup(page);
+  await page.getByRole('link', { name: 'Calendar' }).click();
+  const sidebar = page.locator('aside');
+  await expect(sidebar).toBeVisible();
+  await sidebar.getByRole('button', { name: 'Clock in' }).click();
+  await expect(sidebar.getByText('Working')).toBeVisible();
+  await expect(page.locator('[data-date="2026-09-23"]').first()).toBeVisible();
+});

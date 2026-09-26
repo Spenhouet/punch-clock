@@ -27,23 +27,15 @@
   }
 </script>
 
-<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
   {#each months as mo (mo.start)}
-    <button
-      type="button"
-      class="rounded-2xl bg-card p-3 text-left shadow-xs ring-1 ring-border hover:bg-muted/60"
-      onclick={() => onmonth(mo.start)}
-    >
+    <button type="button" class="surface p-3 text-left hover:bg-muted/60" onclick={() => onmonth(mo.start)}>
       <p class="mb-2 text-sm font-semibold capitalize">{formatDate(mo.start, 'LLLL')}</p>
-      <div class="grid grid-cols-7 gap-[3px]">
+      <div class="grid grid-cols-7 gap-0.75">
         {#each Array(mo.lead) as _, i (i)}<span></span>{/each}
         {#each mo.days as date (date)}
           <span
-            class={cn(
-              'aspect-square rounded-[3px]',
-              cellClass(date),
-              date === ledger.today && 'ring-1 ring-foreground'
-            )}
+            class={cn('aspect-square rounded-xs', cellClass(date), date === ledger.today && 'ring-1 ring-foreground')}
             title={date}
           ></span>
         {/each}

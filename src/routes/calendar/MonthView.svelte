@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Ledger } from '$lib/domain/calc';
   import { addDaysKey, daysBetween, periodOf, type Period } from '$lib/domain/time';
-  import { formatDate, formatMinutes } from '$lib/format';
+  import { formatDate, formatMinutes, toHHmm } from '$lib/format';
   import { absenceBg } from '$lib/labels';
   import { cn } from '$lib/utils';
 
@@ -59,8 +59,8 @@
   }
 </script>
 
-<div class="rounded-2xl bg-card p-2 shadow-xs ring-1 ring-border">
-  <div class="grid grid-cols-7 pb-1 text-center text-[11px] font-medium text-muted-foreground uppercase">
+<div class="surface p-2">
+  <div class="grid grid-cols-7 pb-1 text-center text-caption font-medium text-muted-foreground uppercase">
     {#each weekdays as w (w)}<span>{formatDate(w, 'EEEEEE')}</span>{/each}
   </div>
   <div
@@ -82,7 +82,7 @@
         data-date={date}
         onclick={() => click(date)}
         class={cn(
-          'relative flex aspect-[4/5] flex-col items-center justify-start overflow-hidden rounded-xl pt-1.5 text-sm transition-colors hover:bg-muted',
+          'relative flex aspect-4/5 flex-col items-center justify-start overflow-hidden rounded-xl pt-1.5 text-sm transition-colors hover:bg-muted md:aspect-auto md:h-24 md:items-start md:px-2',
           !inMonth && 'opacity-35',
           date === ledger.today && 'ring-2 ring-primary/60',
           isSel && 'bg-primary/15 ring-2 ring-primary'
@@ -90,13 +90,13 @@
       >
         {#if a}
           <span
-            class={cn('absolute inset-x-0 bottom-0 opacity-25', absenceBg[a.type])}
-            style="height: {a.fraction * 100}%"
+            class={cn('absolute inset-x-0 bottom-0 h-(--fill) opacity-25', absenceBg[a.type])}
+            style="--fill: {a.fraction * 100}%"
           ></span>
         {/if}
         <span
           class={cn(
-            'relative flex size-6 items-center justify-center rounded-full text-[13px] font-medium',
+            'relative flex size-6 items-center justify-center rounded-full text-sm font-medium',
             !d.isWorkday && !d.holiday && 'text-muted-foreground',
             d.holiday && 'bg-holiday/25'
           )}
@@ -106,10 +106,15 @@
         {#if a}
           <span class={cn('relative mt-0.5 size-1.5 rounded-full', absenceBg[a.type])}></span>
         {/if}
+        {#if d.first !== undefined}
+          <span class="relative mt-1 hidden text-xs text-muted-foreground tabular md:block">
+            {toHHmm(d.first)}–{d.running ? '…' : toHHmm(d.last!)}
+          </span>
+        {/if}
         {#if d.gross > 0 || (d.counted && d.target > 0)}
           <span
             class={cn(
-              'tabular relative mt-auto mb-1 text-[10px] leading-none font-medium',
+              'relative mt-auto mb-1 text-2xs leading-none font-medium tabular',
               !d.counted || Math.round(d.delta) === 0
                 ? 'text-muted-foreground'
                 : d.delta > 0

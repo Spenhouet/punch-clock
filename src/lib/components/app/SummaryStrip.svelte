@@ -7,14 +7,14 @@
   let { summary }: { summary: PeriodSummary } = $props();
 </script>
 
-<div class="grid grid-cols-3 divide-x rounded-2xl bg-card py-2.5 text-center shadow-xs ring-1 ring-border">
+<div class="grid grid-cols-3 divide-x surface py-2.5 text-center">
   <div>
     <p class="text-xs text-muted-foreground">{m.worked()}</p>
-    <p class="tabular font-semibold">{formatMinutes(summary.worked)}</p>
+    <p class="font-semibold tabular">{formatMinutes(summary.worked)}</p>
   </div>
   <div>
     <p class="text-xs text-muted-foreground">{m.target()}</p>
-    <p class="tabular font-semibold">{formatMinutes(summary.target)}</p>
+    <p class="font-semibold tabular">{formatMinutes(summary.target)}</p>
   </div>
   <div>
     <p class="text-xs text-muted-foreground">{m.difference()}</p>

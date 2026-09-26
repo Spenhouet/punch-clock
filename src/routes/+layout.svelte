@@ -4,6 +4,7 @@
   import { ModeWatcher } from 'mode-watcher';
   import { Toaster } from '$lib/components/ui/sonner';
   import TabBar from '$lib/components/app/TabBar.svelte';
+  import SideNav from '$lib/components/app/SideNav.svelte';
   import DaySheet from '$lib/components/app/DaySheet.svelte';
   import SegmentSheet from '$lib/components/app/SegmentSheet.svelte';
   import AbsenceSheet from '$lib/components/app/AbsenceSheet.svelte';
@@ -25,7 +26,7 @@
   position="bottom-center"
   richColors
   closeButton={false}
-  offset={{ bottom: 'calc(env(safe-area-inset-bottom) + 84px)' }}
+  offset={{ bottom: '24px' }}
   mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom) + 84px)' }}
 />
 
@@ -33,9 +34,12 @@
   {#if !app.data.settings.setupDone}
     <Setup />
   {:else}
-    <main class="mx-auto min-h-dvh max-w-lg px-4 pb-28">
-      {@render children()}
-    </main>
+    <SideNav />
+    <div class="md:pl-60">
+      <main class="mx-auto min-h-dvh max-w-lg px-4 pb-28 md:max-w-5xl md:px-8 md:pb-12">
+        {@render children()}
+      </main>
+    </div>
     <TabBar />
     <DaySheet />
     <SegmentSheet />

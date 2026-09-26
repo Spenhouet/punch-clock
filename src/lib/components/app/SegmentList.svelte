@@ -28,7 +28,7 @@
           {#if s.kind === 'work'}<Briefcase class="size-4" />{:else}<Coffee class="size-4" />{/if}
         </span>
         <span class="min-w-0 flex-1">
-          <span class="tabular block font-medium">
+          <span class="block font-medium tabular">
             {toHHmm(s.start)} – {s.end === null ? m.now() : toHHmm(s.end)}
           </span>
           <span class="flex items-center gap-1 truncate text-xs text-muted-foreground">
@@ -38,7 +38,7 @@
             {#if s.note}<MessageSquareText class="size-3" /> <span class="truncate">{s.note}</span>{/if}
           </span>
         </span>
-        <span class={cn('tabular text-sm', s.end === null && 'font-semibold text-primary')}>
+        <span class={cn('text-sm tabular', s.end === null && 'font-semibold text-primary')}>
           {formatDuration(end - s.start)}
         </span>
       </button>

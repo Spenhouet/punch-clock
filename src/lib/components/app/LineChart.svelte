@@ -34,7 +34,7 @@
   <div class="mb-2 flex h-9 items-end justify-between text-xs text-muted-foreground">
     <span>{shown?.title ?? label}</span>
     {#if shown}
-      <span class="tabular text-sm font-semibold {shown.value >= 0 ? 'text-positive' : 'text-negative'}">
+      <span class="text-sm font-semibold tabular {shown.value >= 0 ? 'text-positive' : 'text-negative'}">
         {formatMinutes(shown.value, { sign: true })}
       </span>
     {/if}
@@ -44,7 +44,7 @@
       bind:this={svg}
       viewBox="0 0 {W} {H}"
       preserveAspectRatio="none"
-      class="h-[120px] w-full touch-pan-y overflow-visible"
+      class="h-30 w-full touch-pan-y overflow-visible"
       onpointermove={move}
       onpointerdown={move}
       onpointerleave={() => (active = null)}
@@ -84,8 +84,8 @@
     </svg>
     {#if active !== null}
       <span
-        class="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-primary"
-        style="left: {(x(active) / W) * 100}%; top: {y(points[active].value)}px"
+        class="pointer-events-none absolute top-(--y) left-(--x) size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-primary"
+        style="--x: {(x(active) / W) * 100}%; --y: {y(points[active].value)}px"
       ></span>
     {/if}
   </div>
