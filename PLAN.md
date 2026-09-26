@@ -1,5 +1,7 @@
 # PunchClock implementation plan
 
+Status: implemented. Deviations from the original plan are listed under "Changes during implementation" at the end.
+
 PunchClock is a personal time tracker for one person. It runs offline, installs as a PWA from GitHub Pages and ships as an Android APK. English and German are available from day one.
 
 ## Principles
@@ -15,26 +17,26 @@ PunchClock is a personal time tracker for one person. It runs offline, installs 
 
 Same stack as [kiosk-survey](https://github.com/Spenhouet/kiosk-survey), upgraded to the latest releases (checked 2026-09-26).
 
-| Area | Package | Version |
-| --- | --- | --- |
-| Framework | `@sveltejs/kit`, `svelte` | 2.70, 5.57 |
-| Build | `vite`, `@sveltejs/vite-plugin-svelte` | 8.3, 7.3 |
-| Static output | `@sveltejs/adapter-static` | 3.0 |
-| Styling | `tailwindcss`, `@tailwindcss/vite`, `tw-animate-css` | 4.3, 4.3, 1.4 |
-| Components | shadcn-svelte (fresh from CLI), `bits-ui`, `tailwind-variants` | bits-ui 2.19, tv 3.3 |
-| Icons | `@lucide/svelte` | 1.48 |
-| Theme | `mode-watcher` | 1.1 |
-| i18n | `@inlang/paraglide-js` (locales `en`, `de`) | 2.25 |
-| PWA | `@vite-pwa/sveltekit` | 1.1 |
-| Android | `@capacitor/core`, `cli`, `android` | 8.5 |
-| Storage | `dexie` (IndexedDB), `dexie-export-import` | 4.4 |
-| Dates | `date-fns` (with `de` and `enUS` locales) | 4.4 |
-| Holidays | `feiertagejs` (German holidays by state, offline) | 1.5 |
-| PDF | `jspdf`, `jspdf-autotable` | 4.2, 5.0 |
-| Capacitor plugins | `local-notifications`, `filesystem`, `share`, `app`, `haptics`, `preferences` | 8.x |
-| Tests | `vitest`, `@playwright/test` | 5.0, 1.63 |
-| Tooling | `eslint`, `prettier`, `svelte-check` | 10.11, latest, 4.7 |
-| Language | `typescript` | 6.0.3 |
+| Area              | Package                                                                       | Version              |
+| ----------------- | ----------------------------------------------------------------------------- | -------------------- |
+| Framework         | `@sveltejs/kit`, `svelte`                                                     | 2.70, 5.57           |
+| Build             | `vite`, `@sveltejs/vite-plugin-svelte`                                        | 8.3, 7.3             |
+| Static output     | `@sveltejs/adapter-static`                                                    | 3.0                  |
+| Styling           | `tailwindcss`, `@tailwindcss/vite`, `tw-animate-css`                          | 4.3, 4.3, 1.4        |
+| Components        | shadcn-svelte (fresh from CLI), `bits-ui`, `tailwind-variants`                | bits-ui 2.19, tv 3.3 |
+| Icons             | `@lucide/svelte`                                                              | 1.48                 |
+| Theme             | `mode-watcher`                                                                | 1.1                  |
+| i18n              | `@inlang/paraglide-js` (locales `en`, `de`)                                   | 2.25                 |
+| PWA               | `@vite-pwa/sveltekit`                                                         | 1.1                  |
+| Android           | `@capacitor/core`, `cli`, `android`                                           | 8.5                  |
+| Storage           | `dexie` (IndexedDB), `dexie-export-import`                                    | 4.4                  |
+| Dates             | `date-fns` (with `de` and `enUS` locales)                                     | 4.4                  |
+| Holidays          | `feiertagejs` (German holidays by state, offline)                             | 1.5                  |
+| PDF               | `jspdf`, `jspdf-autotable`                                                    | 4.2, 5.0             |
+| Capacitor plugins | `local-notifications`, `filesystem`, `share`, `app`, `haptics`, `preferences` | 8.x                  |
+| Tests             | `vitest`, `@playwright/test`                                                  | 5.0, 1.63            |
+| Tooling           | `eslint`, `prettier`, `svelte-check`                                          | 10.11, latest, 4.7   |
+| Language          | `typescript`                                                                  | 6.0.3                |
 
 TypeScript stays on 6.x. Version 7.0 is out, but the peer ranges of `@sveltejs/kit` and `svelte-check` end at `^6.0.0`. Upgrade once they widen.
 
@@ -57,11 +59,11 @@ All times are stored as ISO strings with offset. Dates are `YYYY-MM-DD` in local
 // and opens a break segment; ending the break opens a new work segment.
 interface Segment {
   id: string;
-  date: string;          // day the segment counts toward (start date)
+  date: string; // day the segment counts toward (start date)
   kind: 'work' | 'break';
   start: string;
-  end: string | null;    // null while running
-  rawStart?: string;     // unrounded stamp, set when rounding is on
+  end: string | null; // null while running
+  rawStart?: string; // unrounded stamp, set when rounding is on
   rawEnd?: string;
   note?: string;
   source: 'manual' | 'button' | 'wifi' | 'notification';
@@ -73,14 +75,22 @@ interface Absence {
   date: string;
   type: 'vacation' | 'comp_time' | 'sick' | 'special_leave' | 'public_holiday_override' | 'other';
   fraction: 1 | 0.5;
-  label?: string;        // e.g. "Summer trip"
-  groupId?: string;      // set when created as a range, so the range can be edited as one
+  label?: string; // e.g. "Summer trip"
+  groupId?: string; // set when created as a range, so the range can be edited as one
 }
 
-interface DayNote { date: string; text: string; }
+interface DayNote {
+  date: string;
+  text: string;
+}
 
 // Manual balance changes: initial overtime after migration, paid-out overtime, corrections.
-interface BalanceAdjustment { id: string; date: string; minutes: number; reason: string; }
+interface BalanceAdjustment {
+  id: string;
+  date: string;
+  minutes: number;
+  reason: string;
+}
 
 // Versioned so that changing hours never rewrites history.
 interface WorkSchedule {
@@ -92,18 +102,18 @@ interface WorkSchedule {
 interface VacationYear {
   year: number;
   entitlementDays: number;
-  carryOverDays: number;     // calculated default, can be overridden
+  carryOverDays: number; // calculated default, can be overridden
   carryOverExpires?: string; // e.g. 2027-03-31
 }
 
 interface Settings {
   locale: 'en' | 'de';
   theme: 'system' | 'light' | 'dark';
-  state: string;             // German state code for holidays, or 'none'
-  breakPresets: number[];    // minutes, default [15, 30, 45, 60]
+  state: string; // German state code for holidays, or 'none'
+  breakPresets: number[]; // minutes, default [15, 30, 45, 60]
   rounding: 0 | 5 | 10 | 15; // applied on stamp, raw time kept in `rawStart`/`rawEnd`
   roundingMode: 'nearest' | 'employer'; // employer: clock-in rounds up, clock-out rounds down
-  autoBreak: boolean;        // apply ArbZG minimum breaks when recorded break is too short
+  autoBreak: boolean; // apply ArbZG minimum breaks when recorded break is too short
   warnings: { maxDay: boolean; restPeriod: boolean };
   reminders: { forgotClockOutAfterMinutes?: number };
   wifi: { ssid?: string; mode: 'ask' | 'auto'; clockOutOnDisconnect: boolean; graceMinutes: number };
@@ -250,3 +260,11 @@ Widget and Quick Settings tile come after 1.0.
 - **Name.** PunchClock (`com.spenhouet.punchclock`). It's clear in English, and German users know "stempeln".
 - **Rounding direction.** The default is nearest. An employer-friendly mode (clock-in rounds up, clock-out rounds down) is available as an option.
 - **Charts.** Hand-rolled SVG (a few bars and a line) instead of a chart library, to keep the bundle small. Revisit if stats grow.
+
+## Changes during implementation
+
+- Timestamps are stored as epoch milliseconds instead of ISO strings. Arithmetic is simpler and Dexie indexes them directly.
+- Calendar and stats keep the period in query parameters (`/calendar?view=month&d=2026-09-01`) instead of path segments. Every route can be prerendered for GitHub Pages, and the back button still works.
+- The clocked-in notification runs in a small foreground service (`specialUse`) instead of `@capacitor/local-notifications`. The service shows a live chronometer, and it keeps the Wi-Fi callback alive so leaving the work Wi-Fi is detected right away. `@capacitor/local-notifications` is still used for the forgot-to-clock-out reminder and the end of timed breaks.
+- `dexie-export-import` and `@capacitor/preferences` were not needed. The backup is a plain JSON file with a format version.
+- Today counts toward the balance only when positive (or as far as comp time was booked), so the balance doesn't drop every morning.

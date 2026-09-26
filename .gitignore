@@ -1,0 +1,11 @@
+node_modules
+test-results
+playwright-report
+/.svelte-kit
+/build
+/dist
+.DS_Store
+.env
+.env.*
+vite.config.ts.timestamp-*
+src/lib/paraglide

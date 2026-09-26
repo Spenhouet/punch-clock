@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name" translatable="false">PunchClock</string>
+    <string name="title_activity_main" translatable="false">PunchClock</string>
+    <string name="package_name" translatable="false">com.spenhouet.punchclock</string>
+    <string name="custom_url_scheme" translatable="false">com.spenhouet.punchclock</string>
+
+    <string name="channel_clock_name">Running clock</string>
+    <string name="channel_clock_description">Ongoing notification with the running work timer</string>
+    <string name="channel_wifi_name">Wi-Fi clock in / out</string>
+    <string name="channel_wifi_description">Prompts and confirmations when you arrive at or leave the work Wi-Fi</string>
+
+    <string name="notif_working">Working</string>
+    <string name="notif_on_break">On break</string>
+    <string name="notif_since">Since %s</string>
+    <string name="notif_until">Until %s</string>
+
+    <string name="action_break">Break</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_clock_out">Clock out</string>
+    <string name="action_clock_in">Clock in</string>
+    <string name="action_dismiss">Dismiss</string>
+
+    <string name="wifi_prompt_in">Connected to %s. Clock in?</string>
+    <string name="wifi_prompt_out">Left %1$s at %2$s. Clock out?</string>
+    <string name="wifi_clocked_in">Clocked in at %1$s (%2$s)</string>
+    <string name="wifi_clocked_out">Clocked out at %1$s (left %2$s)</string>
+</resources>
