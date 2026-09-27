@@ -16,20 +16,18 @@
   $effect(() => localStorage.setItem(MODE_KEY, mode));
 
   /**
-   * Diverging scale for the daily difference: four steps of under-work, a
-   * neutral middle (within ±15 min), four steps of over-work.
+   * Distance from target, whichever direction: green on target, amber a bit
+   * off, red far off. Six steps by absolute difference in minutes.
    */
-  const NEGATIVE = ['bg-negative/100', 'bg-negative/70', 'bg-negative/45', 'bg-negative/25'];
-  const POSITIVE = ['bg-positive/25', 'bg-positive/45', 'bg-positive/70', 'bg-positive/100'];
-  const STEPS = [15, 30, 60, 120];
+  const SCALE = ['bg-positive', 'bg-positive/55', 'bg-warning/60', 'bg-warning', 'bg-negative/65', 'bg-negative'];
+  const LIMITS = [15, 30, 60, 90, 120];
 
   function diffClass(date: string) {
     const d = ledger.day(date);
     if (!d.counted || (!d.target && !d.gross)) return d.isWorkday ? 'bg-muted-foreground/10' : 'bg-transparent';
     const abs = Math.abs(d.delta);
-    if (abs < STEPS[0]) return 'bg-muted-foreground/35';
-    const step = abs >= STEPS[3] ? 3 : abs >= STEPS[2] ? 2 : abs >= STEPS[1] ? 1 : 0;
-    return d.delta > 0 ? POSITIVE[step] : NEGATIVE[3 - step];
+    const step = LIMITS.findIndex((limit) => abs < limit);
+    return SCALE[step === -1 ? SCALE.length - 1 : step];
   }
 
   const months = $derived(
@@ -63,11 +61,9 @@
   />
   {#if mode === 'diff'}
     <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground" aria-label={m.year_mode_diff()}>
-      <span class="mr-1 tabular">−2 h</span>
-      {#each NEGATIVE as c (c)}<span class={cn('size-3 rounded-xs', c)}></span>{/each}
-      <span class="size-3 rounded-xs bg-muted-foreground/35"></span>
-      {#each POSITIVE as c (c)}<span class={cn('size-3 rounded-xs', c)}></span>{/each}
-      <span class="ml-1 tabular">+2 h</span>
+      <span class="mr-1">{m.legend_on_target()}</span>
+      {#each SCALE as c (c)}<span class={cn('size-3 rounded-xs', c)}></span>{/each}
+      <span class="ml-1 tabular">{m.legend_far_off()}</span>
     </div>
   {/if}
 </div>

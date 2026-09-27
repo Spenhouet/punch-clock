@@ -312,6 +312,8 @@
   "default_start": "Usual start",
   "default_start_hint": "Used when a day is filled with its target time.",
   "tab_settings_short": "Settings",
-  "year_mode_diff": "Over/under",
-  "year_mode_types": "Day types"
+  "year_mode_diff": "Target deviation",
+  "year_mode_types": "Day types",
+  "legend_on_target": "On target",
+  "legend_far_off": "±2 h"
 }

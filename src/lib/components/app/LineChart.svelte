@@ -1,5 +1,7 @@
 <script lang="ts">
   import { formatMinutes } from '$lib/format';
+  import { deviationLevel, deviationText } from '$lib/deviation';
+  import { cn } from '$lib/utils';
 
   interface Point {
     key: string;
@@ -34,7 +36,7 @@
   <div class="mb-2 flex h-9 items-end justify-between text-xs text-muted-foreground">
     <span>{shown?.title ?? label}</span>
     {#if shown}
-      <span class="text-sm font-semibold tabular {shown.value >= 0 ? 'text-positive' : 'text-negative'}">
+      <span class={cn('text-sm font-semibold tabular', deviationText[deviationLevel(shown.value, 'balance')])}>
         {formatMinutes(shown.value, { sign: true })}
       </span>
     {/if}

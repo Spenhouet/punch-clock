@@ -1,6 +1,7 @@
 <script lang="ts">
   import { m } from '$lib/paraglide/messages.js';
   import Delta from './Delta.svelte';
+  import { scaleForDays } from '$lib/deviation';
   import type { PeriodSummary } from '$lib/domain/calc';
   import { formatMinutes } from '$lib/format';
 
@@ -18,6 +19,6 @@
   </div>
   <div>
     <p class="text-xs text-muted-foreground">{m.difference()}</p>
-    <p class="font-semibold"><Delta minutes={summary.delta} /></p>
+    <p class="font-semibold"><Delta minutes={summary.delta} scale={scaleForDays(summary.days.length)} /></p>
   </div>
 </div>

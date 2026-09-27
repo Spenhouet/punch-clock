@@ -51,7 +51,7 @@
 <div class="flex flex-col gap-6 pb-4 md:max-w-2xl">
   <div class="surface p-5 text-center">
     <p class="text-sm text-muted-foreground">{m.balance_current()}</p>
-    <p class="text-4xl font-semibold tracking-tight"><Delta minutes={balance} /></p>
+    <p class="text-4xl font-semibold tracking-tight"><Delta minutes={balance} scale="balance" /></p>
   </div>
 
   <Group title={m.set_balance()} footer={m.set_balance_hint()}>
@@ -91,7 +91,7 @@
             <p class="truncate text-body">{a.reason}</p>
             <p class="text-xs text-muted-foreground">{formatDate(a.date, 'PP')}</p>
           </div>
-          <Delta minutes={a.minutes} />
+          <Delta minutes={a.minutes} neutral />
           <Button variant="ghost" size="icon-sm" onclick={() => deleteAdjustment(a.id)} aria-label={m.delete()}
             ><Trash2 /></Button
           >
