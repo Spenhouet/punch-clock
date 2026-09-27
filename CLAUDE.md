@@ -27,6 +27,10 @@ Offline, single-user time tracker. Static SvelteKit app (no server) deployed to 
 
 Read `DESIGN.md` before touching UI. After making changes, run `bun run lint` and fix all errors; it includes the `@shadcn/lint` design rules (no raw colors, no arbitrary values, no restyling of components, no inline styles except CSS custom properties).
 
+## Releases
+
+Add every user-facing change to `CHANGELOG.md` under "Unreleased" (Features / Fixes). To release: rename that section to the new version with the date, bump `version` in `package.json`, commit, then tag `vX.Y.Z` and push the tag. The Android Release workflow uses the section as the release notes and fails if it's missing.
+
 ## Conventions
 
 - Times are epoch milliseconds, days are `YYYY-MM-DD` in local time. A segment counts toward its start day.

@@ -28,6 +28,10 @@ jobs:
           java-version: '21'
           cache: gradle
 
+      - name: Release notes from CHANGELOG.md
+        if: github.ref_type == 'tag'
+        run: scripts/release-notes.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/release-notes.md"
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -93,4 +97,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.apk
-          generate_release_notes: true
+          body_path: ${{ runner.temp }}/release-notes.md
