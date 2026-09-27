@@ -74,7 +74,11 @@
 
 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
   {#each months as mo (mo.start)}
-    <button type="button" class="surface flex flex-col p-3 text-left hover:bg-muted/60" onclick={() => onmonth(mo.start)}>
+    <button
+      type="button"
+      class="flex flex-col surface p-3 text-left hover:bg-muted/60"
+      onclick={() => onmonth(mo.start)}
+    >
       <p class="mb-2 text-sm font-semibold capitalize">{formatDate(mo.start, 'LLLL')}</p>
       <div class="grid grid-cols-7 gap-0.75">
         {#each Array(mo.lead) as _, i (i)}<span></span>{/each}
