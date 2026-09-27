@@ -4,6 +4,12 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+### Features
+
+- Days in the month calendar show the total time worked first, with the difference below.
+- Over/under colors now show how far you are from target in either direction. Green means close to target, amber noticeably off, red far over or far under. The ranges grow with the period (day, week, month, year, balance).
+- The year heatmap uses the same scale.
+
 ## [0.2.2] - 2026-09-27
 
 ### Features

@@ -18,22 +18,24 @@ All tokens live in `src/app.css`. Use them through Tailwind classes. Raw palette
 
 Semantic tokens, each with a light and a dark value:
 
-| Token                                            | Use                                                                            |
-| ------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `background`, `foreground`                       | Page                                                                           |
-| `card`, `popover`                                | Surfaces and sheets                                                            |
-| `muted`, `muted-foreground`                      | Inactive fills, secondary text                                                 |
-| `primary`, `primary-foreground`                  | Brand teal: primary actions, work time, active navigation                      |
-| `secondary`, `accent`                            | Quiet buttons and hover fills                                                  |
-| `destructive`                                    | Delete and error                                                               |
-| `positive`, `negative`                           | Balance and daily difference above or below zero. Text only, never large fills |
-| `break`, `break-foreground`                      | Breaks: timer ring, break entries, the Resume button                           |
-| `vacation`, `comp`, `sick`, `special`, `holiday` | Absence types and public holidays. Always paired with a text label             |
-| `border`, `input`, `ring`                        | Lines, field borders, focus ring                                               |
+| Token                                            | Use                                                                                                   |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `background`, `foreground`                       | Page                                                                                                  |
+| `card`, `popover`                                | Surfaces and sheets                                                                                   |
+| `muted`, `muted-foreground`                      | Inactive fills, secondary text                                                                        |
+| `primary`, `primary-foreground`                  | Brand teal: primary actions, work time, active navigation                                             |
+| `secondary`, `accent`                            | Quiet buttons and hover fills                                                                         |
+| `destructive`                                    | Delete and error                                                                                      |
+| `positive`, `warning`, `negative`                | Distance from target, either direction: on target, somewhat off, far off (see `src/lib/deviation.ts`) |
+| `break`, `break-foreground`                      | Breaks: timer ring, break entries, the Resume button                                                  |
+| `vacation`, `comp`, `sick`, `special`, `holiday` | Absence types and public holidays. Always paired with a text label                                    |
+| `border`, `input`, `ring`                        | Lines, field borders, focus ring                                                                      |
 
 Rules:
 
 - Color never carries meaning alone. Every absence dot sits next to its label, and every delta shows a sign (`+0:30`, `−0:15`).
+- Over/under colors mean distance from target, not direction: green when close to target, amber when noticeably off, red when far over or far under. Working far too much is as much a problem as working too little. Bands grow with the period (day ±30/±90 min, week ±1:30/±4 h, month ±3/±10 h, year and balance ±10/±40 h). Use `Delta` with the right `scale`, or `deviationLevel` for fills.
+- Where a day shows time, the total worked time comes first and the difference second, smaller.
 - Opacity modifiers on tokens are fine for tints: `bg-primary/12` (selected nav), `bg-break/12` (warning notice), `bg-holiday/15`.
 - Text on a colored fill uses the matching `*-foreground` token, or `text-background` on absence colors so it flips correctly in dark mode.
 

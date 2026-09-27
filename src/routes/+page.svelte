@@ -59,7 +59,7 @@
     aria-label={m.balance()}
   >
     <span class="text-xs text-muted-foreground">{m.balance()}</span>
-    <Delta minutes={balance} class="text-lg font-semibold" />
+    <Delta minutes={balance} scale="balance" class="text-lg font-semibold" />
   </a>
 </header>
 

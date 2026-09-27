@@ -58,7 +58,9 @@
           <span class={cn('size-1.5 rounded-full bg-current', status !== 'out' && 'animate-pulse')}></span>
           {status === 'working' ? m.status_working() : status === 'break' ? m.status_break() : m.status_out()}
         </span>
-        <span class="text-xs text-muted-foreground">{m.balance()} <Delta minutes={ledger.balanceNow()} /></span>
+        <span class="text-xs text-muted-foreground"
+          >{m.balance()} <Delta minutes={ledger.balanceNow()} scale="balance" /></span
+        >
       </div>
       <p class="mt-1 text-2xl font-semibold tracking-tight tabular">
         {status === 'break' && running

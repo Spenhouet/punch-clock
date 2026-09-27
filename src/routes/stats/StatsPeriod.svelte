@@ -104,8 +104,8 @@
       <h2 class="text-sm font-medium">{m.balance_over_time()}</h2>
       <LineChart points={balancePoints} label={m.balance()} />
       <div class="mt-2 flex justify-between text-xs text-muted-foreground">
-        <span>{m.balance_before()}: <Delta minutes={summary.balanceBefore} /></span>
-        <span>{m.balance_after()}: <Delta minutes={summary.balanceAfter} /></span>
+        <span>{m.balance_before()}: <Delta minutes={summary.balanceBefore} scale="balance" /></span>
+        <span>{m.balance_after()}: <Delta minutes={summary.balanceAfter} scale="balance" /></span>
       </div>
     </section>
   {/if}

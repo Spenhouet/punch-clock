@@ -312,6 +312,8 @@
   "default_start": "Üblicher Arbeitsbeginn",
   "default_start_hint": "Wird genutzt, wenn ein Tag mit der Soll-Zeit gefüllt wird.",
   "tab_settings_short": "Optionen",
-  "year_mode_diff": "Mehr/Weniger",
-  "year_mode_types": "Tagesarten"
+  "year_mode_diff": "Soll-Abweichung",
+  "year_mode_types": "Tagesarten",
+  "legend_on_target": "Im Soll",
+  "legend_far_off": "±2 h"
 }

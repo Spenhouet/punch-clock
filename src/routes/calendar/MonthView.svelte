@@ -5,6 +5,7 @@
   import { formatDate, formatMinutes, toHHmm } from '$lib/format';
   import { absenceBg } from '$lib/labels';
   import { cn } from '$lib/utils';
+  import { deviationLevel, deviationText } from '$lib/deviation';
 
   let {
     ledger,
@@ -116,17 +117,15 @@
           </span>
         {/if}
         {#if d.gross > 0 || (d.counted && d.target > 0)}
-          <span
-            class={cn(
-              'relative mt-auto mb-1 text-2xs leading-none font-medium tabular',
-              !d.counted || Math.round(d.delta) === 0
-                ? 'text-muted-foreground'
-                : d.delta > 0
-                  ? 'text-positive'
-                  : 'text-negative'
-            )}
-          >
-            {d.counted ? formatMinutes(d.delta, { sign: true }) : formatMinutes(d.worked)}
+          <span class="relative mt-auto flex flex-col items-center leading-none md:items-start">
+            <span class="text-xs font-semibold tabular">{formatMinutes(d.worked)}</span>
+            {#if d.counted}
+              <span class={cn('mt-0.5 mb-1 text-2xs font-medium tabular', deviationText[deviationLevel(d.delta)])}>
+                {formatMinutes(d.delta, { sign: true })}
+              </span>
+            {:else}
+              <span class="mb-1"></span>
+            {/if}
           </span>
         {/if}
       </button>
