@@ -188,18 +188,18 @@ test('typing an absence label keeps the text', async ({ page }) => {
 });
 
 async function swipeLeft(page: Page, selector: string) {
-  await page
-    .locator(selector)
-    .first()
-    .evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      const y = r.top + 40;
-      const touch = (x: number) => new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
-      el.dispatchEvent(
-        new TouchEvent('touchstart', { touches: [touch(300)], changedTouches: [touch(300)], bubbles: true })
-      );
-      el.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [touch(120)], bubbles: true }));
+  const box = (await page.locator(selector).first().boundingBox())!;
+  const y = box.y + 40;
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (type: string, x: number) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: type === 'touchEnd' ? [] : [{ x, y }]
     });
+  await touch('touchStart', 320);
+  for (let x = 300; x >= 100; x -= 25) await touch('touchMove', x);
+  await touch('touchEnd', 100);
+  await cdp.detach();
 }
 
 test('swiping changes the period in calendar and stats', async ({ page }) => {

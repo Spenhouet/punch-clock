@@ -7,28 +7,19 @@
   import PageHeader from '$lib/components/app/PageHeader.svelte';
   import Segmented from '$lib/components/app/Segmented.svelte';
   import PeriodNav from '$lib/components/app/PeriodNav.svelte';
-  import SummaryStrip from '$lib/components/app/SummaryStrip.svelte';
   import { Button } from '$lib/components/ui/button';
-  import WeekView from './WeekView.svelte';
-  import WeekBoard from './WeekBoard.svelte';
-  import MonthView from './MonthView.svelte';
-  import YearView from './YearView.svelte';
+  import CalendarPeriod from './CalendarPeriod.svelte';
   import { app } from '$lib/state.svelte';
   import { fillWithTarget } from '$lib/db/entries';
   import { toast } from 'svelte-sonner';
   import { ui } from '$lib/ui.svelte';
-  import { swipe } from '$lib/actions/swipe';
+  import Swipeable from '$lib/components/app/Swipeable.svelte';
   import { periodOf, shiftPeriod, type PeriodKind } from '$lib/domain/time';
-  import { absenceBg, absenceLabel } from '$lib/labels';
-  import { ABSENCE_TYPES } from '$lib/domain/types';
-  import { formatNumber } from '$lib/format';
-  import { cn } from '$lib/utils';
 
   const ledger = $derived(app.ledger!);
   const view = $derived((page.url.searchParams.get('view') as PeriodKind) || 'week');
   const anchor = $derived(page.url.searchParams.get('d') || ledger.today);
   const period = $derived(periodOf(view, anchor));
-  const summary = $derived(ledger.period(period.start, period.end));
 
   let selecting = $state(false);
   const selected = new SvelteSet<string>();
@@ -88,9 +79,6 @@
       return !day.segments.length && day.target > 0 && d <= ledger.today;
     }).length
   );
-
-  const year = $derived(Number(period.start.slice(0, 4)));
-  const vacation = $derived(ledger.vacation(year));
 </script>
 
 <svelte:head><title>{m.tab_calendar()} · PunchClock</title></svelte:head>
@@ -114,7 +102,7 @@
   {/snippet}
 </PageHeader>
 
-<div class="flex flex-col gap-3" use:swipe={{ onLeft: () => shift(1), onRight: () => shift(-1) }}>
+<div class="flex flex-col gap-3">
   <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
     <Segmented
       class="md:w-80"
@@ -131,52 +119,22 @@
     />
     <div class="md:flex-1"><PeriodNav {period} onshift={shift} ontoday={() => navigate(view, ledger.today)} /></div>
   </div>
-  <SummaryStrip {summary} />
-
-  {#if selecting}
-    <p class="text-center text-xs text-muted-foreground">
-      {view === 'month' ? m.select_hint_month() : m.select_hint()}
-    </p>
-  {/if}
-
-  {#if view === 'week'}
-    {#if wide.current}
-      <WeekBoard days={summary.days} today={ledger.today} {selecting} {selected} {onday} {onlongpress} />
-    {:else}
-      <WeekView days={summary.days} today={ledger.today} {selecting} {selected} {onday} {onlongpress} />
-    {/if}
-  {:else if view === 'month'}
-    <MonthView {ledger} {period} {selecting} {selected} {onday} {ondrag} {onlongpress} />
-  {:else}
-    <YearView {ledger} {year} onmonth={(start) => navigate('month', start)} />
-    <div class="surface p-4">
-      <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        {#each ABSENCE_TYPES as t (t)}
-          <div class="flex items-center gap-2">
-            <span class={cn('size-3 rounded-xs', absenceBg[t])}></span>
-            <span class="flex-1">{absenceLabel(t)}</span>
-            <span class="font-medium tabular">{formatNumber(summary.absenceDays[t])}</span>
-          </div>
-        {/each}
-        <div class="flex items-center gap-2">
-          <span class="size-3 rounded-xs bg-holiday"></span>
-          <span class="flex-1">{m.holidays()}</span>
-          <span class="font-medium tabular">{summary.holidays}</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="size-3 rounded-xs bg-primary"></span>
-          <span class="flex-1">{m.days_worked()}</span>
-          <span class="font-medium tabular">{summary.daysWorked}</span>
-        </div>
-      </div>
-      <p class="mt-3 border-t pt-3 text-sm text-muted-foreground">
-        {m.vacation_left_of({
-          left: formatNumber(vacation.left),
-          total: formatNumber(vacation.entitlement + vacation.carryOver - vacation.carryOverLost)
-        })}
-      </p>
-    </div>
-  {/if}
+  <Swipeable key={period.start} group={view} onprev={() => shift(-1)} onnext={() => shift(1)} disabled={selecting}>
+    {#snippet children(offset)}
+      <CalendarPeriod
+        {ledger}
+        {view}
+        period={offset ? shiftPeriod(period, offset) : period}
+        wide={wide.current}
+        {selecting}
+        {selected}
+        {onday}
+        {ondrag}
+        {onlongpress}
+        {navigate}
+      />
+    {/snippet}
+  </Swipeable>
 </div>
 
 {#if selecting && selected.size}

@@ -1,0 +1,208 @@
+<script lang="ts">
+  import { m } from '$lib/paraglide/messages.js';
+  import { FileText, Sheet as SheetIcon, CalendarPlus, Table } from '@lucide/svelte';
+  import { toast } from 'svelte-sonner';
+  import StatTile from '$lib/components/app/StatTile.svelte';
+  import SummaryStrip from '$lib/components/app/SummaryStrip.svelte';
+  import BarChart from '$lib/components/app/BarChart.svelte';
+  import LineChart from '$lib/components/app/LineChart.svelte';
+  import Delta from '$lib/components/app/Delta.svelte';
+  import type { Ledger } from '$lib/domain/calc';
+  import { daysBetween, isoWeek, periodOf, type Period, type PeriodKind } from '$lib/domain/time';
+  import { formatClock, formatDate, formatMinutes, formatNumber } from '$lib/format';
+  import { absenceBg, absenceLabel } from '$lib/labels';
+  import { ABSENCE_TYPES } from '$lib/domain/types';
+  import { cn } from '$lib/utils';
+
+  /** Stats for one period. Rendered for the neighbors too while swiping. */
+  let { ledger, view, period }: { ledger: Ledger; view: PeriodKind; period: Period } = $props();
+
+  const summary = $derived(ledger.period(period.start, period.end));
+  const year = $derived(Number(period.start.slice(0, 4)));
+  const vacation = $derived(ledger.vacation(year));
+  const bars = $derived.by(() => {
+    if (view === 'year') {
+      return Array.from({ length: 12 }, (_, i) => {
+        const p = periodOf('month', `${year}-${String(i + 1).padStart(2, '0')}-01`);
+        const s = ledger.period(p.start, p.end);
+        return {
+          key: p.start,
+          label: formatDate(p.start, 'LLLLL'),
+          title: formatDate(p.start, 'LLLL yyyy'),
+          value: s.worked,
+          target: s.target
+        };
+      });
+    }
+    return summary.days.map((d) => ({
+      key: d.date,
+      label: view === 'week' ? formatDate(d.date, 'EEEEEE') : formatDate(d.date, 'd'),
+      title: formatDate(d.date, 'EEEE, d. MMM'),
+      value: d.worked,
+      target: d.target
+    }));
+  });
+
+  const balancePoints = $derived.by(() => {
+    const end = period.end < ledger.today ? period.end : ledger.today;
+    if (end < period.start) return [];
+    const days = daysBetween(period.start, end);
+    const step = days.length > 120 ? 7 : 1;
+    const picked = days.filter((_, i) => i % step === 0 || i === days.length - 1);
+    return picked.map((d) => ({ key: d, title: formatDate(d, 'EEE, d. MMM yyyy'), value: ledger.balanceAt(d) }));
+  });
+
+  let exporting = $state(false);
+  const fileBase = $derived(
+    view === 'year'
+      ? `punchclock-${year}`
+      : view === 'month'
+        ? `punchclock-${period.start.slice(0, 7)}`
+        : `punchclock-${year}-W${String(isoWeek(period.start).week).padStart(2, '0')}`
+  );
+
+  async function run(kind: 'pdf' | 'csv' | 'entries' | 'ics') {
+    if (exporting) return;
+    exporting = true;
+    try {
+      const { saveFile } = await import('$lib/export/save');
+      if (kind === 'pdf') {
+        const { timesheetPdf } = await import('$lib/export/pdf');
+        await saveFile(`${fileBase}.pdf`, timesheetPdf(ledger, view, period.start, period.end), 'application/pdf');
+      } else if (kind === 'csv') {
+        const { daysCsv } = await import('$lib/export/csv');
+        await saveFile(`${fileBase}.csv`, daysCsv(ledger, period.start, period.end), 'text/csv');
+      } else if (kind === 'entries') {
+        const { entriesCsv } = await import('$lib/export/csv');
+        await saveFile(`${fileBase}-entries.csv`, entriesCsv(ledger, period.start, period.end), 'text/csv');
+      } else {
+        const { absencesIcs } = await import('$lib/export/ics');
+        const list = ledger.data.absences.filter((a) => a.date >= period.start && a.date <= period.end);
+        await saveFile(`${fileBase}-absences.ics`, absencesIcs(list), 'text/calendar');
+      }
+    } catch (e) {
+      if (!String(e).includes('cancel')) toast.error(m.export_failed());
+      console.error(e);
+    } finally {
+      exporting = false;
+    }
+  }
+
+  const vacTotal = $derived(vacation.entitlement + vacation.carryOver - vacation.carryOverLost);
+</script>
+
+<div class="grid gap-3 md:grid-cols-2 md:gap-4">
+  <div class="md:col-span-2"><SummaryStrip {summary} /></div>
+
+  <section class="surface p-4 md:col-span-2">
+    <h2 class="text-sm font-medium">{m.worked_vs_target()}</h2>
+    <BarChart {bars} valueLabel={m.worked()} targetLabel={m.target()} />
+  </section>
+
+  {#if balancePoints.length > 1}
+    <section class="surface p-4">
+      <h2 class="text-sm font-medium">{m.balance_over_time()}</h2>
+      <LineChart points={balancePoints} label={m.balance()} />
+      <div class="mt-2 flex justify-between text-xs text-muted-foreground">
+        <span>{m.balance_before()}: <Delta minutes={summary.balanceBefore} /></span>
+        <span>{m.balance_after()}: <Delta minutes={summary.balanceAfter} /></span>
+      </div>
+    </section>
+  {/if}
+
+  <section class="grid grid-cols-2 gap-2 md:content-start">
+    {#each [{ label: m.days_worked(), value: String(summary.daysWorked) }, { label: m.avg_per_day(), value: summary.avgWorked !== undefined ? formatMinutes(summary.avgWorked) : '–' }, { label: m.avg_start(), value: summary.avgStart !== undefined ? formatClock(summary.avgStart) : '–' }, { label: m.avg_end(), value: summary.avgEnd !== undefined ? formatClock(summary.avgEnd) : '–' }, { label: m.pause_total(), value: formatMinutes(summary.pause) }, { label: m.holidays(), value: String(summary.holidays) }] as tile (tile.label)}
+      <StatTile label={tile.label} value={tile.value} />
+    {/each}
+  </section>
+
+  <section class="surface p-4">
+    <div class="flex items-baseline justify-between">
+      <h2 class="text-sm font-medium">{m.vacation_year({ year })}</h2>
+      <span class="text-sm text-muted-foreground tabular"
+        >{m.vacation_left_of({ left: formatNumber(vacation.left), total: formatNumber(vacTotal) })}</span
+      >
+    </div>
+    <div class="mt-3 flex h-3 overflow-hidden rounded-full bg-muted">
+      <div
+        class="h-full w-(--fill) bg-vacation"
+        style="--fill: {vacTotal ? (vacation.taken / vacTotal) * 100 : 0}%"
+      ></div>
+      <div
+        class="h-full w-(--fill) border-l-2 border-card bg-vacation/40"
+        style="--fill: {vacTotal ? (vacation.planned / vacTotal) * 100 : 0}%"
+      ></div>
+    </div>
+    <div class="mt-3 grid grid-cols-2 gap-y-1 text-sm">
+      <span class="text-muted-foreground">{m.entitlement()}</span><span class="text-right tabular"
+        >{formatNumber(vacation.entitlement)}</span
+      >
+      <span class="text-muted-foreground">{m.carry_over()}</span><span class="text-right tabular"
+        >{formatNumber(vacation.carryOver)}</span
+      >
+      {#if vacation.carryOverLost}
+        <span class="text-muted-foreground">{m.carry_over_lost()}</span><span class="text-right text-negative tabular"
+          >−{formatNumber(vacation.carryOverLost)}</span
+        >
+      {/if}
+      <span class="flex items-center gap-1.5 text-muted-foreground"
+        ><span class="size-2 rounded-full bg-vacation"></span>{m.taken()}</span
+      ><span class="text-right tabular">{formatNumber(vacation.taken)}</span>
+      <span class="flex items-center gap-1.5 text-muted-foreground"
+        ><span class="size-2 rounded-full bg-vacation/40"></span>{m.planned()}</span
+      ><span class="text-right tabular">{formatNumber(vacation.planned)}</span>
+    </div>
+  </section>
+
+  <section class="surface p-4">
+    <h2 class="mb-2 text-sm font-medium">{m.absences_in_period()}</h2>
+    <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+      {#each ABSENCE_TYPES as t (t)}
+        <div class="flex items-center gap-2">
+          <span class={cn('size-2.5 rounded-full', absenceBg[t])}></span>
+          <span class="flex-1 text-muted-foreground">{absenceLabel(t)}</span>
+          <span class="font-medium tabular">{formatNumber(summary.absenceDays[t])}</span>
+        </div>
+      {/each}
+    </div>
+  </section>
+
+  <section class="surface p-4">
+    <h2 class="text-sm font-medium">{m.export()}</h2>
+    <p class="mb-3 text-xs text-muted-foreground">{m.export_hint()}</p>
+    <div class="grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        disabled={exporting}
+        onclick={() => run('pdf')}
+        class="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium hover:bg-muted disabled:opacity-50"
+      >
+        <FileText class="size-4 text-primary" />{m.export_pdf()}
+      </button>
+      <button
+        type="button"
+        disabled={exporting}
+        onclick={() => run('csv')}
+        class="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium hover:bg-muted disabled:opacity-50"
+      >
+        <SheetIcon class="size-4 text-primary" />{m.export_csv_days()}
+      </button>
+      <button
+        type="button"
+        disabled={exporting}
+        onclick={() => run('entries')}
+        class="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium hover:bg-muted disabled:opacity-50"
+      >
+        <Table class="size-4 text-primary" />{m.export_csv_entries()}
+      </button>
+      <button
+        type="button"
+        disabled={exporting}
+        onclick={() => run('ics')}
+        class="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium hover:bg-muted disabled:opacity-50"
+      >
+        <CalendarPlus class="size-4 text-primary" />{m.export_ics()}
+      </button>
+    </div>
+  </section>
+</div>

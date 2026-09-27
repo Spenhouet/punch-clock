@@ -12,6 +12,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4173',
     viewport: { width: 400, height: 860 },
     locale: 'en-US',
-    timezoneId: 'Europe/Berlin'
+    timezoneId: 'Europe/Berlin',
+    hasTouch: true
   }
 });
