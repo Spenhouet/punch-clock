@@ -51,7 +51,8 @@
     {@render content()}
   </button>
 {:else}
-  <div class="flex min-h-14 items-center gap-3 px-4 py-2.5">
+  <!-- A label, so tapping anywhere in the row toggles its switch or focuses its field -->
+  <label class="flex min-h-14 items-center gap-3 px-4 py-2.5">
     {@render content()}
-  </div>
+  </label>
 {/if}

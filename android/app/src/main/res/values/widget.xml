@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen widget, light theme (dark overrides in values-night) -->
+    <color name="widget_surface">#F3FAF8</color>
+    <color name="widget_on_surface">#171D1C</color>
+    <color name="widget_on_surface_variant">#57625F</color>
+    <color name="widget_primary">#0F766E</color>
+    <color name="widget_on_primary">#FFFFFF</color>
+    <color name="widget_secondary_container">#D2EDE9</color>
+    <color name="widget_on_secondary_container">#0B4F49</color>
+    <color name="widget_dot_working">#16A34A</color>
+    <color name="widget_dot_break">#D97706</color>
+    <color name="widget_dot_out">#9CA3AF</color>
+
+    <dimen name="widget_radius">24dp</dimen>
+
+    <style name="WidgetButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:minWidth">88dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>

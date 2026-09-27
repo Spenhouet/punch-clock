@@ -20,4 +20,9 @@
     <string name="wifi_prompt_out">%1$s um %2$s verlassen. Ausstempeln?</string>
     <string name="wifi_clocked_in">Um %1$s eingestempelt (%2$s)</string>
     <string name="wifi_clocked_out">Um %1$s ausgestempelt (%2$s verlassen)</string>
+
+    <string name="widget_description">Ein- und ausstempeln vom Startbildschirm</string>
+    <string name="widget_not_clocked_in">Nicht eingestempelt</string>
+    <string name="widget_balance">Saldo %s</string>
+    <string name="widget_preview_balance">Saldo +12:30</string>
 </resources>

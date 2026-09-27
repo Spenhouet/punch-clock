@@ -2,7 +2,7 @@
   import { resolve } from '$app/paths';
   import { m } from '$lib/paraglide/messages.js';
   import { toast } from 'svelte-sonner';
-  import { Wifi, Bell, BatteryCharging, MapPin, Smartphone, Check, Workflow } from '@lucide/svelte';
+  import { Wifi, Bell, BatteryCharging, MapPin, Smartphone, Check, Workflow, LayoutGrid } from '@lucide/svelte';
   import PageHeader from '$lib/components/app/PageHeader.svelte';
   import Group from '$lib/components/app/Group.svelte';
   import Row from '$lib/components/app/Row.svelte';
@@ -21,11 +21,13 @@
   let perms = $state<NativePermissions | null>(null);
   let batteryOk = $state(false);
   let ssid = $state('');
+  let canPin = $state(false);
 
   async function refresh() {
     if (!isNative) return;
     perms = await PunchClock.checkPermissions().catch(() => null);
     batteryOk = (await PunchClock.isIgnoringBatteryOptimizations().catch(() => ({ value: false }))).value;
+    canPin = (await PunchClock.canPinWidget().catch(() => ({ value: false }))).value;
   }
   $effect(() => {
     refresh();
@@ -123,6 +125,12 @@
       />
     </div>
   </Group>
+
+  {#if isNative && canPin}
+    <Group title={m.widget()} footer={m.widget_hint()}>
+      <Row icon={LayoutGrid} label={m.widget_add()} onclick={() => PunchClock.pinWidget().catch(() => {})} />
+    </Group>
+  {/if}
 
   <Group title={m.wifi_trigger()} footer={m.wifi_trigger_hint()}>
     <Row icon={Wifi} label={m.wifi_enable()}>

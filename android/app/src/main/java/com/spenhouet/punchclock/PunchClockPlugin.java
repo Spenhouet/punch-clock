@@ -2,7 +2,9 @@ package com.spenhouet.punchclock;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -46,7 +48,7 @@ public class PunchClockPlugin extends Plugin {
     public void load() {
         current = new WeakReference<>(this);
         Notifications.ensureChannels(getContext());
-        WifiHelper.applyRegistration(getContext());
+        WifiHelper.rearmUnlessOnTarget(getContext());
     }
 
     @Override
@@ -70,14 +72,22 @@ public class PunchClockPlugin extends Plugin {
         long plannedEnd = getLong(call, "plannedEnd");
         boolean notifications = Boolean.TRUE.equals(call.getBoolean("notifications", true));
         Context ctx = getContext();
+        Double balance = call.getDouble("balanceMinutes");
         ClockState.save(ctx, status, since, workedMs, System.currentTimeMillis(), plannedEnd, notifications);
+        ClockState.saveBalance(ctx, balance == null || balance.isNaN() ? null : (int) Math.round(balance));
         ClockService.refresh(ctx);
+        // The widget is independent of the notification setting
+        ClockWidgetProvider.updateAll(ctx);
         call.resolve();
     }
 
+    /**
+     * Read a number as long. PluginCall.getDouble returns null for values the
+     * JSON parser stored as Long (every epoch-millisecond timestamp), so read
+     * from the raw data instead.
+     */
     private static long getLong(PluginCall call, String key) {
-        Double d = call.getDouble(key);
-        return d == null ? 0 : d.longValue();
+        return call.getData().optLong(key, 0);
     }
 
     @PluginMethod
@@ -222,6 +232,27 @@ public class PunchClockPlugin extends Plugin {
                 return;
             }
         }
+        call.resolve();
+    }
+
+    /** Whether the launcher supports adding the widget from inside the app. */
+    @PluginMethod
+    public void canPinWidget(PluginCall call) {
+        JSObject ret = new JSObject();
+        AppWidgetManager manager = AppWidgetManager.getInstance(getContext());
+        ret.put("value", Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && manager != null && manager.isRequestPinAppWidgetSupported());
+        call.resolve(ret);
+    }
+
+    /** Ask the launcher to place the home screen widget; the system shows its own confirmation. */
+    @PluginMethod
+    public void pinWidget(PluginCall call) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(getContext());
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || manager == null || !manager.isRequestPinAppWidgetSupported()) {
+            call.reject("unsupported");
+            return;
+        }
+        manager.requestPinAppWidget(new ComponentName(getContext(), ClockWidgetProvider.class), null, null);
         call.resolve();
     }
 

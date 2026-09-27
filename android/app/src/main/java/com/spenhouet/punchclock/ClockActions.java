@@ -9,7 +9,7 @@ public final class ClockActions {
 
     /**
      * Queue the event for the web layer, update the persisted state optimistically and bring the
-     * service / notification in line.
+     * service / notification and the home screen widget in line.
      *
      * @return false if the foreground service should run but could not be started
      */
@@ -17,6 +17,8 @@ public final class ClockActions {
         Context app = context.getApplicationContext();
         ClockState.applyAction(app, action, at);
         ClockState.queueEvent(app, action, at, source);
-        return ClockService.refresh(app);
+        boolean started = ClockService.refresh(app);
+        ClockWidgetProvider.updateAll(app);
+        return started;
     }
 }

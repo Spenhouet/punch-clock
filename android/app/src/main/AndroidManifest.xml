@@ -47,9 +47,26 @@
                 android:value="Personal working time clock: shows the running work timer and detects leaving the work Wi-Fi to clock out" />
         </service>
 
+        <service
+            android:name=".RearmJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <receiver
             android:name=".ActionReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".ClockWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/clock_widget_info" />
+        </receiver>
 
         <receiver
             android:name=".WifiReceiver"

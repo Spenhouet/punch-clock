@@ -25,4 +25,11 @@
     <string name="wifi_prompt_out">Left %1$s at %2$s. Clock out?</string>
     <string name="wifi_clocked_in">Clocked in at %1$s (%2$s)</string>
     <string name="wifi_clocked_out">Clocked out at %1$s (left %2$s)</string>
+
+    <string name="widget_label" translatable="false">PunchClock</string>
+    <string name="widget_description">Clock in and out from the home screen</string>
+    <string name="widget_not_clocked_in">Not clocked in</string>
+    <string name="widget_balance">Balance %s</string>
+    <string name="widget_preview_timer" translatable="false">2:47:15</string>
+    <string name="widget_preview_balance">Balance +12:30</string>
 </resources>
