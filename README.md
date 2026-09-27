@@ -108,7 +108,7 @@ cd android && ./gradlew assembleRelease
 
 ### Publishing a release
 
-Push a version tag. The workflow builds, signs and attaches the APK to a GitHub release.
+Move the "Unreleased" entries in [CHANGELOG.md](CHANGELOG.md) under a new version heading, bump the version in `package.json`, then push a version tag. The workflow builds, signs and attaches the APK to a GitHub release and uses the changelog section as the release notes.
 
 ```bash
 git tag v1.0.0
