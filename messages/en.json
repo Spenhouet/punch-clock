@@ -311,5 +311,7 @@
   "fill_target": "Target time ({count})",
   "default_start": "Usual start",
   "default_start_hint": "Used when a day is filled with its target time.",
-  "tab_settings_short": "Settings"
+  "tab_settings_short": "Settings",
+  "year_mode_diff": "Over/under",
+  "year_mode_types": "Day types"
 }
