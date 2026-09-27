@@ -89,14 +89,17 @@
       <Button
         variant={selecting ? 'secondary' : 'ghost'}
         size="sm"
+        aria-label={selecting ? m.cancel() : m.select()}
         onclick={() => (selecting ? stopSelecting() : (selecting = true))}
       >
-        {#if selecting}<X />{m.cancel()}{:else}<ListChecks />{m.select()}{/if}
+        {#if selecting}<X /><span class="hidden @xs:inline">{m.cancel()}</span>{:else}<ListChecks /><span
+            class="hidden @xs:inline">{m.select()}</span
+          >{/if}
       </Button>
     {/if}
     {#if anchor !== ledger.today || period.start > ledger.today || period.end < ledger.today}
-      <Button variant="ghost" size="sm" onclick={() => navigate(view, ledger.today)}>
-        <CalendarCheck />{m.today()}
+      <Button variant="ghost" size="sm" aria-label={m.today()} onclick={() => navigate(view, ledger.today)}>
+        <CalendarCheck /><span class="hidden @xs:inline">{m.today()}</span>
       </Button>
     {/if}
   {/snippet}

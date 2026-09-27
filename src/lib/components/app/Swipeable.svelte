@@ -149,8 +149,9 @@
 
 <svelte:window onkeydown={key_} />
 
+<!-- -mx-2/px-2 give focus rings and borders at the edges room inside the clip; the neighbor sits 16px out and stays hidden -->
 <div
-  class={cn('grid touch-pan-y overflow-x-clip', className)}
+  class={cn('-mx-2 grid touch-pan-y overflow-x-clip px-2', className)}
   ontouchstart={start}
   ontouchmove={move}
   ontouchend={end}

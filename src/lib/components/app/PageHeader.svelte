@@ -6,7 +6,7 @@
 </script>
 
 <header
-  class="sticky top-0 z-30 -mx-4 mb-2 box-content flex h-14 items-center gap-1 bg-background/90 px-4 pt-safe backdrop-blur-lg md:-mx-8 md:mb-4 md:h-20 md:px-8"
+  class="@container sticky top-0 z-30 -mx-4 mb-2 box-content flex h-14 items-center gap-1 bg-background/90 px-4 pt-safe backdrop-blur-lg md:-mx-8 md:mb-4 md:h-20 md:px-8"
 >
   {#if back}
     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
