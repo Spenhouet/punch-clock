@@ -136,6 +136,12 @@
   margin-bottom: env(safe-area-inset-bottom);
 }
 
+/* Children of a grid that share one cell, e.g. the two views during a slide */
+@utility stack-item {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }

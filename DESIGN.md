@@ -83,6 +83,7 @@ System font stack. Scale:
 
 - `transition-colors` for hover and press states, `transition-all` for data changes (ring, bars).
 - Sheets slide from the bottom on mobile and fade/slide in centered on desktop (`Sheet`).
+- Period changes go through `Swipeable`: the view follows the finger, the neighboring period rides along, and on release the old period slides out while the new one slides in (about 200 to 340 ms, ease-out). Buttons and arrow keys play the same slide; switching week/month/year crossfades. Motion is off when the system asks for reduced motion.
 - No looping animation except the pulsing status dot while clocked in.
 
 ### Inline styles
@@ -111,7 +112,7 @@ Safe-area insets use the utilities `pt-safe`, `pt-safe-<n>`, `pb-safe` and `mb-s
 | Settings list                            | `Group` with `Row` children                                                                                                                                                                              |
 | Form field with label                    | `Field` wrapping `Input`, `Textarea`, `NativeSelect` or `HoursInput`                                                                                                                                     |
 | Durations entered by the user            | `HoursInput` (accepts `7:30` and `7.5`)                                                                                                                                                                  |
-| Period switching                         | `PeriodNav` plus `Segmented` for week/month/year                                                                                                                                                         |
+| Period switching                         | `PeriodNav` plus `Segmented` for week/month/year, content wrapped in `Swipeable`                                                                                                                         |
 | Worked/target/difference row             | `SummaryStrip`                                                                                                                                                                                           |
 | Page title bar                           | `PageHeader` (sticky, optional back link and actions)                                                                                                                                                    |
 | Charts                                   | `BarChart`, `LineChart`, `ProgressRing`                                                                                                                                                                  |
