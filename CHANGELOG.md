@@ -4,6 +4,15 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-27
+
+### Fixes
+
+- The left and right borders of the days in the week view were cut off.
+- Day numbers and times in the month view were cut off on narrow phones and with larger system text. Month cells now grow with their content.
+- With large text, the calendar header buttons show only their icons so the page title still fits.
+- Some small labels (tab bar, month cells) rendered at full text size, which cut off the tab labels. They now use their intended smaller size.
+
 ## [0.3.0] - 2026-09-27
 
 ### Features

@@ -87,7 +87,7 @@
         onclick={() => click(date)}
         use:longpress={selecting ? undefined : () => onlongpress?.(date)}
         class={cn(
-          'relative flex aspect-4/5 flex-col items-center justify-start overflow-hidden rounded-xl pt-1.5 text-sm transition-colors hover:bg-muted md:aspect-auto md:h-24 md:items-start md:px-2',
+          'relative flex min-h-16 flex-col items-center justify-start rounded-xl pt-1.5 text-sm transition-colors hover:bg-muted md:min-h-24 md:items-start md:px-2',
           !inMonth && 'opacity-35',
           date === ledger.today && 'ring-2 ring-primary/60',
           isSel && 'bg-primary/15 ring-2 ring-primary'
@@ -95,7 +95,11 @@
       >
         {#if a}
           <span
-            class={cn('absolute inset-x-0 bottom-0 h-(--fill) opacity-25', absenceBg[a.type])}
+            class={cn(
+              'absolute inset-x-0 bottom-0 h-(--fill) opacity-25',
+              a.fraction === 1 ? 'rounded-xl' : 'rounded-b-xl',
+              absenceBg[a.type]
+            )}
             style="--fill: {a.fraction * 100}%"
           ></span>
         {/if}

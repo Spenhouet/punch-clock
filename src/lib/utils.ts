@@ -1,5 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+// tailwind-merge only knows the default theme. Without this it reads the custom text sizes
+// from app.css as colors and drops them next to a real color class like text-primary.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['2xs', 'caption', 'body', 'display'] }]
+    }
+  }
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

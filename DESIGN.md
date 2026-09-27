@@ -56,6 +56,7 @@ System font stack. Scale:
 | `text-display`         | 44 px     | The live timer on Today                            |
 
 - Every number that changes or lines up in columns gets the `tabular` utility.
+- New text size tokens must also be registered in `src/lib/utils.ts` (`extendTailwindMerge`). Otherwise `cn()` mistakes them for colors and drops them next to a color class.
 - Weights: `font-medium` for labels and buttons, `font-semibold` for values and titles. No bold.
 - Section headings in settings are `text-xs font-semibold uppercase tracking-wide text-muted-foreground` (see `Group`).
 
