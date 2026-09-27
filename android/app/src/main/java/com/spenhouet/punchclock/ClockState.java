@@ -32,6 +32,8 @@ public final class ClockState {
     private static final String K_WORKED_AT = "workedAt";
     private static final String K_PLANNED_END = "plannedEnd";
     private static final String K_NOTIFICATIONS = "notifications";
+    private static final String K_HAS_BALANCE = "hasBalance";
+    private static final String K_BALANCE_MINUTES = "balanceMinutes";
     private static final String K_EVENTS = "events";
 
     private static final String K_WIFI_ENABLED = "wifiEnabled";
@@ -48,6 +50,10 @@ public final class ClockState {
     public final long workedAt;
     public final long plannedEnd;
     public final boolean notifications;
+    /** Whether {@link #balanceMinutes} was provided by the web layer. */
+    public final boolean hasBalance;
+    /** Overtime balance in minutes at the last sync. */
+    public final int balanceMinutes;
 
     private ClockState(SharedPreferences p) {
         status = p.getString(K_STATUS, OUT);
@@ -56,6 +62,8 @@ public final class ClockState {
         workedAt = p.getLong(K_WORKED_AT, 0);
         plannedEnd = p.getLong(K_PLANNED_END, 0);
         notifications = p.getBoolean(K_NOTIFICATIONS, true);
+        hasBalance = p.getBoolean(K_HAS_BALANCE, false);
+        balanceMinutes = p.getInt(K_BALANCE_MINUTES, 0);
     }
 
     static SharedPreferences prefs(Context context) {
@@ -93,6 +101,15 @@ public final class ClockState {
             .commit();
     }
 
+    /** Store the overtime balance shown on the widget; {@code null} clears it. */
+    public static void saveBalance(Context context, Integer minutes) {
+        prefs(context)
+            .edit()
+            .putBoolean(K_HAS_BALANCE, minutes != null)
+            .putInt(K_BALANCE_MINUTES, minutes == null ? 0 : minutes)
+            .commit();
+    }
+
     /** Apply an action to the persisted state optimistically (the web layer corrects on next sync). */
     public static void applyAction(Context context, String action, long at) {
         ClockState s = load(context);
@@ -118,7 +135,7 @@ public final class ClockState {
         }
     }
 
-    private static boolean sameDay(long a, long b) {
+    static boolean sameDay(long a, long b) {
         if (a <= 0) return false;
         Calendar ca = Calendar.getInstance();
         ca.setTimeInMillis(a);

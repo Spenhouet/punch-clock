@@ -41,14 +41,18 @@ async function applyEvent(e: NativeEvent) {
 }
 
 let lastSync = '';
+let lastState = '';
 
-/** Push the current clock state to the native notification when it changes. */
+/** Push the current clock state to the native notification and widget when it changes. */
 function syncNotification() {
   const ledger = app.ledger;
   if (!ledger) return;
   const r = ledger.running;
   const status = ledger.status;
-  const key = `${status}|${r?.id}|${r?.start}|${r?.plannedEnd}|${ledger.settings.notifications}|${ledger.today}`;
+  const state = `${status}|${r?.id}|${r?.start}|${r?.plannedEnd}|${ledger.settings.notifications}|${ledger.today}`;
+  // Rounded to minutes, so the widget refreshes at most once a minute for the balance
+  const balanceMinutes = Math.round(ledger.balanceNow());
+  const key = `${state}|${balanceMinutes}`;
   if (key === lastSync) return;
   lastSync = key;
   const today = ledger.day(ledger.today);
@@ -60,8 +64,11 @@ function syncNotification() {
     since: r?.start ?? 0,
     workedMs,
     plannedEnd: r?.plannedEnd,
-    notifications: ledger.settings.notifications
+    notifications: ledger.settings.notifications,
+    balanceMinutes
   }).catch((e) => console.error('sync failed', e));
+  if (state === lastState) return;
+  lastState = state;
   scheduleReminders();
 }
 
@@ -82,7 +89,10 @@ async function scheduleReminders() {
       id: BREAK_END_ID,
       title: m.notif_break_over_title(),
       body: m.notif_break_over_body(),
-      schedule: { at: new Date(r.plannedEnd), allowWhileIdle: true }
+      schedule: { at: new Date(r.plannedEnd), allowWhileIdle: true },
+      // Inexact on purpose: exact alarms need a special permission and the plugin
+      // would send the user to system settings on every clock-in to ask for it
+      isExactNotification: false
     });
   }
   if (r && ledger.settings.reminderAfterMinutes > 0) {
@@ -93,7 +103,8 @@ async function scheduleReminders() {
         id: REMINDER_ID,
         title: m.notif_reminder_title(),
         body: m.notif_reminder_body({ hours: Math.round(ledger.settings.reminderAfterMinutes / 6) / 10 }),
-        schedule: { at: new Date(at), allowWhileIdle: true }
+        schedule: { at: new Date(at), allowWhileIdle: true },
+        isExactNotification: false
       });
     }
   }

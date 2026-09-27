@@ -65,12 +65,16 @@ public final class Notifications {
 
     /** Broadcast to {@link ActionReceiver}; {@code at} of 0 means "when tapped". */
     static PendingIntent action(Context context, String action, long at, int cancelId) {
+        return action(context, action, at, cancelId, (action + ":" + cancelId).hashCode());
+    }
+
+    /** Like {@link #action(Context, String, long, int)} with an explicit PendingIntent request code. */
+    static PendingIntent action(Context context, String action, long at, int cancelId, int requestCode) {
         Intent intent = new Intent(context, ActionReceiver.class);
         intent.setAction(ActionReceiver.ACTION_PREFIX + action);
         intent.putExtra(ActionReceiver.EXTRA_ACTION, action);
         intent.putExtra(ActionReceiver.EXTRA_AT, at);
         intent.putExtra(ActionReceiver.EXTRA_CANCEL_ID, cancelId);
-        int requestCode = (action + ":" + cancelId).hashCode();
         return PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 

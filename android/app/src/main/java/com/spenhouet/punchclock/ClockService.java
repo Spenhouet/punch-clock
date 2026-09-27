@@ -233,6 +233,8 @@ public class ClockService extends Service {
             lossTime = 0;
         } else {
             lossTime = System.currentTimeMillis();
+            // The connect trigger fires only once per arming; arm it for the next arrival
+            WifiHelper.applyRegistration(this);
             int grace = ClockState.wifi(this).graceMinutes;
             handler.removeCallbacks(graceCheck);
             handler.postDelayed(graceCheck, grace * 60_000L);

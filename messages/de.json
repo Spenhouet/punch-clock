@@ -315,5 +315,8 @@
   "year_mode_diff": "Soll-Abweichung",
   "year_mode_types": "Tagesarten",
   "legend_on_target": "Im Soll",
-  "legend_far_off": "±2 h"
+  "legend_far_off": "±2 h",
+  "widget": "Widget",
+  "widget_add": "Widget zum Startbildschirm hinzufügen",
+  "widget_hint": "Zeigt die laufende Zeit und deinen Saldo, mit Knöpfen zum Ein- und Ausstempeln und für Pausen."
 }

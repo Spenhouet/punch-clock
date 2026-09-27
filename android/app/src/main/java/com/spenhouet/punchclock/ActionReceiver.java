@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-/** Receives the notification action buttons. */
+/** Receives the notification and home screen widget action buttons. */
 public class ActionReceiver extends BroadcastReceiver {
 
     static final String ACTION_PREFIX = "com.spenhouet.punchclock.action.";

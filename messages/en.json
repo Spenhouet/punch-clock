@@ -315,5 +315,8 @@
   "year_mode_diff": "Target deviation",
   "year_mode_types": "Day types",
   "legend_on_target": "On target",
-  "legend_far_off": "±2 h"
+  "legend_far_off": "±2 h",
+  "widget": "Home screen widget",
+  "widget_add": "Add widget to home screen",
+  "widget_hint": "Shows the running time and your balance, with buttons to clock in, take a break and clock out."
 }

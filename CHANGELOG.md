@@ -4,11 +4,22 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-27
+
 ### Features
 
+- Android home screen widget: status, a live timer, your balance and Clock in / Break / Clock out buttons. It resizes from a compact 2x1 (status, timer and a play/stop button) to the full 4x1 layout, and follows light and dark mode.
 - Days in the month calendar show the total time worked first, with the difference below.
 - Over/under colors now show how far you are from target in either direction. Green means close to target, amber noticeably off, red far over or far under. The ranges grow with the period (day, week, month, year, balance).
 - The year heatmap uses the same scale.
+- "Add widget to home screen" in Settings → Notifications & Wi-Fi places the widget without going through the launcher.
+- Tapping anywhere on a settings row now toggles its switch, not just the switch itself.
+
+### Fixes
+
+- Clocking in on Android opened the system "Alarms & reminders" settings page. Reminders are now scheduled without needing that permission.
+- The Android notification showed "Since 1:00 AM" instead of the actual clock-in time, and timed breaks didn't count down in it.
+- Wi-Fi clock-in stopped working after it had triggered once. Android releases this kind of network trigger after each use, so PunchClock now re-arms it when you leave the work Wi-Fi, when the app opens, and at least every 15 minutes.
 
 ## [0.2.2] - 2026-09-27
 

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home screen widget, 4x1 and larger: status, timer, balance and two stacked action buttons -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:baselineAligned="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <include layout="@layout/widget_status_row" />
+
+        <Chronometer
+            android:id="@+id/widget_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFeatureSettings="tnum"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/widget_on_surface"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/widget_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:fontFeatureSettings="tnum"
+            android:maxLines="1"
+            android:textColor="@color/widget_on_surface_variant"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_secondary"
+            style="@style/WidgetButton"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_button_secondary"
+            android:text="@string/action_break"
+            android:textColor="@color/widget_on_secondary_container"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/widget_primary"
+            style="@style/WidgetButton"
+            android:background="@drawable/widget_button_primary"
+            android:text="@string/action_clock_in"
+            android:textColor="@color/widget_on_primary" />
+    </LinearLayout>
+</LinearLayout>

@@ -24,7 +24,7 @@ export interface NativePermissions {
 }
 
 export interface PunchClockPlugin {
-  /** Mirror the clock state into the ongoing notification / foreground service. */
+  /** Mirror the clock state into the ongoing notification / foreground service and the widget. */
   sync(options: {
     status: ClockStatus;
     /** Start of the running segment. */
@@ -33,6 +33,8 @@ export interface PunchClockPlugin {
     workedMs: number;
     plannedEnd?: number;
     notifications: boolean;
+    /** Current overtime balance in minutes, shown on the home screen widget. */
+    balanceMinutes: number;
   }): Promise<void>;
   drainEvents(): Promise<{ events: NativeEvent[] }>;
   configureWifi(options: WifiConfig): Promise<void>;
@@ -44,6 +46,8 @@ export interface PunchClockPlugin {
   isIgnoringBatteryOptimizations(): Promise<{ value: boolean }>;
   requestIgnoreBatteryOptimizations(): Promise<void>;
   openAppSettings(): Promise<void>;
+  canPinWidget(): Promise<{ value: boolean }>;
+  pinWidget(): Promise<void>;
   addListener(event: 'events', handler: () => void): Promise<PluginListenerHandle>;
 }
 

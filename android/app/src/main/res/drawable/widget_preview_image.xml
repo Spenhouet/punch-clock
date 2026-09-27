@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget picker preview before Android 12: stylized wide widget -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="57dp"
+    android:viewportWidth="280"
+    android:viewportHeight="80">
+    <!-- card -->
+    <path
+        android:fillColor="@color/widget_surface"
+        android:pathData="M24,0h232a24,24 0,0 1,24 24v32a24,24 0,0 1,-24 24h-232a24,24 0,0 1,-24 -24v-32a24,24 0,0 1,24 -24z" />
+    <!-- status dot -->
+    <path
+        android:fillColor="@color/widget_dot_working"
+        android:pathData="M24,20m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <!-- status text -->
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M34,17h50a3,3 0,0 1,0 6h-50a3,3 0,0 1,0 -6z" />
+    <!-- timer -->
+    <path
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M20,32h100a6,6 0,0 1,6 6v4a6,6 0,0 1,-6 6h-100a6,6 0,0 1,-6 -6v-4a6,6 0,0 1,6 -6z" />
+    <!-- balance -->
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M20,56h56a3,3 0,0 1,0 6h-56a3,3 0,0 1,0 -6z" />
+    <!-- secondary button -->
+    <path
+        android:fillColor="@color/widget_secondary_container"
+        android:pathData="M185,8h70a15,15 0,0 1,0 30h-70a15,15 0,0 1,0 -30z" />
+    <!-- primary button -->
+    <path
+        android:fillColor="@color/widget_primary"
+        android:pathData="M185,42h70a15,15 0,0 1,0 30h-70a15,15 0,0 1,0 -30z" />
+</vector>

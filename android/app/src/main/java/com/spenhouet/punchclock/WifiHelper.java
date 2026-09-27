@@ -141,7 +141,11 @@ public final class WifiHelper {
         try {
             cm.unregisterNetworkCallback(pi);
         } catch (RuntimeException ignore) {}
-        if (!ClockState.wifi(app).active()) return;
+        if (!ClockState.wifi(app).active()) {
+            RearmJobService.cancel(app);
+            return;
+        }
+        RearmJobService.schedule(app);
         // Networks already connected at registration time do not count as a new arrival
         try {
             for (Network n : cm.getAllNetworks()) {
@@ -156,5 +160,17 @@ public final class WifiHelper {
         } catch (RuntimeException e) {
             Log.w(TAG, "register wifi callback failed", e);
         }
+    }
+
+    /**
+     * Arm the trigger again unless the phone is on the work Wi-Fi right now. Arming while
+     * connected to it would only produce a delivery for a network that is already known.
+     */
+    public static void rearmUnlessOnTarget(Context context) {
+        Context app = context.getApplicationContext();
+        ClockState.Wifi w = ClockState.wifi(app);
+        if (!w.active()) return;
+        if (w.matches(ssidFromWifiManager(app))) return;
+        applyRegistration(app);
     }
 }
