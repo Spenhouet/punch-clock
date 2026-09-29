@@ -148,6 +148,24 @@ public final class Notifications {
         notify(context, ID_WIFI_PROMPT, b.build());
     }
 
+    /** Left the Wi-Fi during the usual break time (ask mode). */
+    public static void postBreakPrompt(Context context, String ssid, long at) {
+        NotificationCompat.Builder b = wifiBase(context, context.getString(R.string.wifi_prompt_break, ssid, time(context, at)))
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .addAction(0, context.getString(R.string.action_break), action(context, "break", at, ID_WIFI_PROMPT))
+            .addAction(0, context.getString(R.string.action_clock_out), action(context, "out", at, ID_WIFI_PROMPT));
+        notify(context, ID_WIFI_PROMPT, b.build());
+    }
+
+    /** Back on the Wi-Fi after a break it started (ask mode). */
+    public static void postResumePrompt(Context context, String ssid, long at) {
+        NotificationCompat.Builder b = wifiBase(context, context.getString(R.string.wifi_prompt_resume, ssid, time(context, at)))
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .addAction(0, context.getString(R.string.action_resume), action(context, "resume", at, ID_WIFI_PROMPT))
+            .addAction(0, context.getString(R.string.action_dismiss), action(context, ActionReceiver.DISMISS, 0, ID_WIFI_PROMPT));
+        notify(context, ID_WIFI_PROMPT, b.build());
+    }
+
     public static boolean canPost(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true;
         return ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;

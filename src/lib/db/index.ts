@@ -60,13 +60,25 @@ export function defaultSettings(): Settings {
     notifications: true,
     reminderAfterMinutes: 600,
     autoBackup: false,
-    wifi: { enabled: false, ssid: '', mode: 'ask', clockOutOnDisconnect: true, graceMinutes: 5 }
+    wifi: {
+      enabled: false,
+      ssid: '',
+      mode: 'ask',
+      clockOutOnDisconnect: true,
+      graceMinutes: 5,
+      breakWindow: false,
+      breakFrom: '12:00',
+      breakTo: '13:30'
+    }
   };
 }
 
 export async function loadSettings(database = db): Promise<Settings> {
   const row = await database.kv.get('settings');
-  return { ...defaultSettings(), ...((row?.value as Partial<Settings>) ?? {}) };
+  const stored = (row?.value as Partial<Settings>) ?? {};
+  const defaults = defaultSettings();
+  // Nested so settings saved by older versions pick up new Wi-Fi fields
+  return { ...defaults, ...stored, wifi: { ...defaults.wifi, ...(stored.wifi ?? {}) } };
 }
 
 export async function saveSettings(patch: Partial<Settings>, database = db): Promise<void> {

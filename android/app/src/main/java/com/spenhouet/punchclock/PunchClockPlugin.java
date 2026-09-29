@@ -74,6 +74,7 @@ public class PunchClockPlugin extends Plugin {
         Context ctx = getContext();
         Double balance = call.getDouble("balanceMinutes");
         ClockState.save(ctx, status, since, workedMs, System.currentTimeMillis(), plannedEnd, notifications);
+        if (!"break".equals(status)) ClockState.setWifiBreakAt(ctx, 0);
         ClockState.saveBalance(ctx, balance == null || balance.isNaN() ? null : (int) Math.round(balance));
         ClockService.refresh(ctx);
         // The widget is independent of the notification setting
@@ -112,6 +113,12 @@ public class PunchClockPlugin extends Plugin {
             call.getString("mode", "ask"),
             Boolean.TRUE.equals(call.getBoolean("clockOutOnDisconnect", false)),
             grace == null ? 5 : grace.intValue()
+        );
+        ClockState.saveBreakWindow(
+            getContext(),
+            Boolean.TRUE.equals(call.getBoolean("breakWindow", false)),
+            (int) getLong(call, "breakFromMinutes"),
+            (int) getLong(call, "breakToMinutes")
         );
         WifiHelper.applyRegistration(getContext());
         ClockService.refresh(getContext());

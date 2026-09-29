@@ -48,6 +48,12 @@ export async function clockOut(now: Timestamp = Date.now(), _source: SegmentSour
     const r = await runningSegment(database);
     if (!r) return undefined;
     if (r.kind === 'break') {
+      // Clocking out right where a break began (e.g. not back from the usual break, clocked out
+      // at the time the Wi-Fi was lost) leaves an empty break; drop it instead of storing it
+      if (now - r.start < 60_000) {
+        await database.segments.delete(r.id);
+        return r;
+      }
       // A break ends where it ends; rounding only applies to real clock-out stamps
       await database.segments.update(r.id, { end: Math.max(now, r.start), plannedEnd: undefined });
       return r;

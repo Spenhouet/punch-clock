@@ -107,6 +107,11 @@ export interface Settings {
     mode: 'ask' | 'auto';
     clockOutOnDisconnect: boolean;
     graceMinutes: number;
+    /** Leaving the Wi-Fi inside this daily window starts a break instead of clocking out. */
+    breakWindow: boolean;
+    /** `HH:mm` */
+    breakFrom: string;
+    breakTo: string;
   };
 }
 

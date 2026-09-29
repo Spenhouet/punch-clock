@@ -318,5 +318,8 @@
   "legend_far_off": "±2 h",
   "widget": "Home screen widget",
   "widget_add": "Add widget to home screen",
-  "widget_hint": "Shows the running time and your balance, with buttons to clock in, take a break and clock out."
+  "widget_hint": "Shows the running time and your balance, with buttons to clock in, take a break and clock out.",
+  "wifi_break_window": "Usual break time",
+  "wifi_break_window_hint": "Leaving the Wi-Fi then starts a break instead of clocking out",
+  "wifi_break_window_detail": "The break starts when the Wi-Fi was lost and ends when you're back. If you're not back by {to}, you're clocked out at the time you left."
 }

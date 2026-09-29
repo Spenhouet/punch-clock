@@ -40,6 +40,7 @@ public class ClockService extends Service {
     private boolean onTarget = false;
     private long lossTime = 0;
     private final Runnable graceCheck = this::onGraceExpired;
+    private final Runnable breakWindowCheck = this::onBreakWindowOver;
 
     /** Whether the service should be running for the given state. */
     static boolean shouldRun(Context context) {
@@ -173,10 +174,12 @@ public class ClockService extends Service {
         } catch (RuntimeException e) {
             Log.w(TAG, "wifi monitor failed", e);
         }
+        scheduleBreakWindowCheck();
     }
 
     private void stopWifiMonitor() {
         handler.removeCallbacks(graceCheck);
+        handler.removeCallbacks(breakWindowCheck);
         if (wifiCallback != null) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             try {
@@ -231,6 +234,7 @@ public class ClockService extends Service {
             // Back within the grace period
             handler.removeCallbacks(graceCheck);
             lossTime = 0;
+            onReturn();
         } else {
             lossTime = System.currentTimeMillis();
             // The connect trigger fires only once per arming; arm it for the next arrival
@@ -248,11 +252,73 @@ public class ClockService extends Service {
         if (!s.isClockedIn() || !w.monitorDisconnect()) return;
         long at = lossTime;
         lossTime = 0;
+        if (s.isWorking() && w.inBreakWindow(at)) {
+            // Leaving during the usual break time is a break, not the end of the day
+            if (w.auto) {
+                ClockActions.perform(this, "break", at, ClockState.SOURCE_WIFI);
+                ClockState.setWifiBreakAt(this, at);
+                Notifications.postInfo(this, getString(R.string.wifi_break_started, Notifications.time(this, at), w.ssid));
+                scheduleBreakWindowCheck();
+            } else {
+                Notifications.postBreakPrompt(this, w.ssid, at);
+            }
+            return;
+        }
+        if (s.isOnBreak() && w.inBreakWindow(at)) {
+            // Left while on a break taken by hand: keep it, and treat it like a Wi-Fi break
+            ClockState.setWifiBreakAt(this, at);
+            scheduleBreakWindowCheck();
+            return;
+        }
+        // Already on a break the Wi-Fi started; the window check decides what happens next
+        if (ClockState.wifiBreakAt(this) > 0) return;
         if (w.auto) {
             ClockActions.perform(this, "out", at, ClockState.SOURCE_WIFI);
             Notifications.postInfo(this, getString(R.string.wifi_clocked_out, Notifications.time(this, at), w.ssid));
         } else {
             Notifications.postClockOutPrompt(this, w.ssid, at);
+        }
+    }
+
+    /** Back on the work Wi-Fi: end a break that leaving it started. */
+    private void onReturn() {
+        long breakAt = ClockState.wifiBreakAt(this);
+        if (breakAt <= 0 || !ClockState.load(this).isOnBreak()) return;
+        handler.removeCallbacks(breakWindowCheck);
+        ClockState.Wifi w = ClockState.wifi(this);
+        long at = System.currentTimeMillis();
+        if (w.auto) {
+            ClockActions.perform(this, "resume", at, ClockState.SOURCE_WIFI);
+            Notifications.postInfo(this, getString(R.string.wifi_break_ended, Notifications.time(this, at)));
+        } else {
+            ClockState.setWifiBreakAt(this, 0);
+            Notifications.postResumePrompt(this, w.ssid, at);
+        }
+    }
+
+    private void scheduleBreakWindowCheck() {
+        handler.removeCallbacks(breakWindowCheck);
+        long breakAt = ClockState.wifiBreakAt(this);
+        if (breakAt <= 0) return;
+        ClockState.Wifi w = ClockState.wifi(this);
+        long due = w.breakWindowEnd(breakAt) + w.graceMinutes * 60_000L;
+        handler.postDelayed(breakWindowCheck, Math.max(0, due - System.currentTimeMillis()));
+    }
+
+    /**
+     * Still away when the usual break time is over: that was the end of the day, so clock out at
+     * the time the Wi-Fi was lost, which drops the break.
+     */
+    private void onBreakWindowOver() {
+        long breakAt = ClockState.wifiBreakAt(this);
+        if (breakAt <= 0 || onTarget || !ClockState.load(this).isOnBreak()) return;
+        ClockState.Wifi w = ClockState.wifi(this);
+        if (w.auto) {
+            ClockActions.perform(this, "out", breakAt, ClockState.SOURCE_WIFI);
+            Notifications.postInfo(this, getString(R.string.wifi_break_timeout, Notifications.time(this, breakAt)));
+        } else {
+            ClockState.setWifiBreakAt(this, 0);
+            Notifications.postClockOutPrompt(this, w.ssid, breakAt);
         }
     }
 }

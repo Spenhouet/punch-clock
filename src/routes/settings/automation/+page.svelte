@@ -8,6 +8,7 @@
   import Row from '$lib/components/app/Row.svelte';
   import Segmented from '$lib/components/app/Segmented.svelte';
   import NativeSelect from '$lib/components/app/NativeSelect.svelte';
+  import Field from '$lib/components/app/Field.svelte';
   import { Switch } from '$lib/components/ui/switch';
   import { Input } from '$lib/components/ui/input';
   import { Button } from '$lib/components/ui/button';
@@ -183,6 +184,38 @@
             onchange={(v) => saveWifi({ graceMinutes: Number(v) })}
           />
         </div>
+        <Row label={m.wifi_break_window()} description={m.wifi_break_window_hint()}>
+          <Switch checked={settings.wifi.breakWindow} onCheckedChange={(v) => saveWifi({ breakWindow: v })} />
+        </Row>
+        {#if settings.wifi.breakWindow}
+          <div class="grid grid-cols-2 gap-3 px-4 py-3">
+            <Field label={m.from()}>
+              <Input
+                type="time"
+                value={settings.wifi.breakFrom}
+                onchange={(e) => {
+                  const v = (e.target as HTMLInputElement).value;
+                  if (v) saveWifi({ breakFrom: v });
+                }}
+                class="h-10"
+              />
+            </Field>
+            <Field label={m.to()}>
+              <Input
+                type="time"
+                value={settings.wifi.breakTo}
+                onchange={(e) => {
+                  const v = (e.target as HTMLInputElement).value;
+                  if (v) saveWifi({ breakTo: v });
+                }}
+                class="h-10"
+              />
+            </Field>
+            <p class="col-span-2 text-xs text-muted-foreground">
+              {m.wifi_break_window_detail({ to: settings.wifi.breakTo })}
+            </p>
+          </div>
+        {/if}
       {/if}
     {/if}
   </Group>

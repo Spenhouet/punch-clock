@@ -41,6 +41,11 @@ public final class ClockState {
     private static final String K_WIFI_MODE = "wifiMode";
     private static final String K_WIFI_CLOCK_OUT = "wifiClockOut";
     private static final String K_WIFI_GRACE = "wifiGraceMinutes";
+    private static final String K_WIFI_BREAK_WINDOW = "wifiBreakWindow";
+    private static final String K_WIFI_BREAK_FROM = "wifiBreakFrom";
+    private static final String K_WIFI_BREAK_TO = "wifiBreakTo";
+    /** Loss time of a break that leaving the Wi-Fi started; 0 when the current break isn't one. */
+    private static final String K_WIFI_BREAK_AT = "wifiBreakAt";
     private static final String K_LAST_CONNECT = "wifiLastConnectHandled";
     private static final String K_SEEN_NETWORKS = "wifiSeenNetworks";
 
@@ -78,6 +83,14 @@ public final class ClockState {
         return !OUT.equals(status);
     }
 
+    public boolean isWorking() {
+        return WORKING.equals(status);
+    }
+
+    public boolean isOnBreak() {
+        return BREAK.equals(status);
+    }
+
     /** Work time today at {@code at}, counting the running work segment. */
     public long workedAt(long at) {
         if (WORKING.equals(status)) return workedMs + Math.max(0, at - workedAt);
@@ -112,6 +125,8 @@ public final class ClockState {
 
     /** Apply an action to the persisted state optimistically (the web layer corrects on next sync). */
     public static void applyAction(Context context, String action, long at) {
+        // Any stamp other than a break ends a break that leaving the Wi-Fi started
+        if (!"break".equals(action)) setWifiBreakAt(context, 0);
         ClockState s = load(context);
         long worked = s.workedAt(at);
         switch (action) {
@@ -191,8 +206,16 @@ public final class ClockState {
         public final boolean auto;
         public final boolean clockOutOnDisconnect;
         public final int graceMinutes;
+        /** Leaving the Wi-Fi inside this daily window starts a break instead of clocking out. */
+        public final boolean breakWindow;
+        /** Minutes after midnight. */
+        public final int breakFrom;
+        public final int breakTo;
 
         Wifi(SharedPreferences p) {
+            breakWindow = p.getBoolean(K_WIFI_BREAK_WINDOW, false);
+            breakFrom = p.getInt(K_WIFI_BREAK_FROM, 12 * 60);
+            breakTo = p.getInt(K_WIFI_BREAK_TO, 13 * 60 + 30);
             enabled = p.getBoolean(K_WIFI_ENABLED, false);
             ssid = p.getString(K_WIFI_SSID, "");
             auto = "auto".equals(p.getString(K_WIFI_MODE, "ask"));
@@ -211,10 +234,52 @@ public final class ClockState {
         public boolean matches(String other) {
             return other != null && active() && ssid.equals(other);
         }
+
+        /** Whether {@code ts} falls into the usual break window (local time of day). */
+        public boolean inBreakWindow(long ts) {
+            if (!breakWindow || breakFrom == breakTo) return false;
+            int m = minuteOfDay(ts);
+            return breakFrom < breakTo ? m >= breakFrom && m < breakTo : m >= breakFrom || m < breakTo;
+        }
+
+        /** End of the break window that contains {@code ts}, as a timestamp. */
+        public long breakWindowEnd(long ts) {
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(ts);
+            c.set(Calendar.HOUR_OF_DAY, breakTo / 60);
+            c.set(Calendar.MINUTE, breakTo % 60);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            if (c.getTimeInMillis() <= ts) c.add(Calendar.DAY_OF_YEAR, 1);
+            return c.getTimeInMillis();
+        }
     }
 
     public static Wifi wifi(Context context) {
         return new Wifi(prefs(context));
+    }
+
+    static int minuteOfDay(long ts) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(ts);
+        return c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE);
+    }
+
+    public static void saveBreakWindow(Context context, boolean enabled, int from, int to) {
+        prefs(context)
+            .edit()
+            .putBoolean(K_WIFI_BREAK_WINDOW, enabled)
+            .putInt(K_WIFI_BREAK_FROM, Math.max(0, Math.min(24 * 60 - 1, from)))
+            .putInt(K_WIFI_BREAK_TO, Math.max(0, Math.min(24 * 60, to)))
+            .commit();
+    }
+
+    public static long wifiBreakAt(Context context) {
+        return prefs(context).getLong(K_WIFI_BREAK_AT, 0);
+    }
+
+    public static void setWifiBreakAt(Context context, long at) {
+        prefs(context).edit().putLong(K_WIFI_BREAK_AT, at).commit();
     }
 
     public static void saveWifi(Context context, boolean enabled, String ssid, String mode, boolean clockOut, int graceMinutes) {
