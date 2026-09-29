@@ -21,6 +21,12 @@ public class ActionReceiver extends BroadcastReceiver {
         if (action == null || DISMISS.equals(action)) return;
         long at = intent.getLongExtra(EXTRA_AT, 0);
         if (at <= 0) at = System.currentTimeMillis();
-        ClockActions.perform(context, action, at, ClockState.SOURCE_NOTIFICATION);
+        boolean fromWifiPrompt = cancelId == Notifications.ID_WIFI_PROMPT;
+        ClockActions.perform(context, action, at, fromWifiPrompt ? ClockState.SOURCE_WIFI : ClockState.SOURCE_NOTIFICATION);
+        if (fromWifiPrompt && "break".equals(action)) {
+            // Accepted from the break prompt: coming back to the Wi-Fi should end it
+            ClockState.setWifiBreakAt(context, at);
+            ClockService.refresh(context);
+        }
     }
 }

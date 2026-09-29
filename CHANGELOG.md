@@ -4,6 +4,16 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-29
+
+### Features
+
+- Usual break time for the Wi-Fi trigger. Leaving the work Wi-Fi within this window starts a break (backdated to when the Wi-Fi was lost) instead of clocking out, and coming back ends the break. If you're not back by the end of the window, you're clocked out at the time you left. In "Ask me" mode you get notifications with Break / Clock out and Resume buttons instead.
+
+### Fixes
+
+- Clocking out right where a break began no longer leaves an empty break entry.
+
 ## [0.3.1] - 2026-09-27
 
 ### Fixes

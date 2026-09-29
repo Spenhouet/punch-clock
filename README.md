@@ -70,6 +70,8 @@ Android only shows Wi-Fi names to apps with location access. PunchClock never re
 
 When the phone joins the work Wi-Fi, PunchClock either asks you with a notification (default) or clocks you in right away. When it leaves, PunchClock waits for a grace period (default 5 min) and then clocks you out, using the time the Wi-Fi was lost.
 
+With a **usual break time** set (for example 12:00 to 13:30), leaving the Wi-Fi inside that window starts a break instead of clocking you out, backdated to when the Wi-Fi was lost. Coming back ends the break. If you're not back by the end of the window, PunchClock clocks you out at the time you left, so no break time is counted.
+
 ### Automation apps
 
 Send a broadcast intent to package `com.spenhouet.punchclock` with one of these actions:

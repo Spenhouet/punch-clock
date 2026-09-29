@@ -25,4 +25,9 @@
     <string name="widget_not_clocked_in">Nicht eingestempelt</string>
     <string name="widget_balance">Saldo %s</string>
     <string name="widget_preview_balance">Saldo +12:30</string>
+    <string name="wifi_prompt_break">%1$s um %2$s während der üblichen Pause verlassen. Pause starten?</string>
+    <string name="wifi_prompt_resume">Zurück im %1$s um %2$s. Pause beenden?</string>
+    <string name="wifi_break_started">Pause ab %1$s (%2$s verlassen)</string>
+    <string name="wifi_break_ended">Zurück um %1$s, Pause beendet</string>
+    <string name="wifi_break_timeout">Ausgestempelt um %1$s (nach der Pause nicht zurückgekommen)</string>
 </resources>

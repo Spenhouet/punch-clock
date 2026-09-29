@@ -318,5 +318,8 @@
   "legend_far_off": "±2 h",
   "widget": "Widget",
   "widget_add": "Widget zum Startbildschirm hinzufügen",
-  "widget_hint": "Zeigt die laufende Zeit und deinen Saldo, mit Knöpfen zum Ein- und Ausstempeln und für Pausen."
+  "widget_hint": "Zeigt die laufende Zeit und deinen Saldo, mit Knöpfen zum Ein- und Ausstempeln und für Pausen.",
+  "wifi_break_window": "Übliche Pausenzeit",
+  "wifi_break_window_hint": "Das WLAN zu verlassen startet dann eine Pause statt auszustempeln",
+  "wifi_break_window_detail": "Die Pause beginnt, als das WLAN weg war, und endet, wenn du zurück bist. Bist du um {to} nicht zurück, wirst du zur Zeit des Verlassens ausgestempelt."
 }

@@ -137,7 +137,20 @@ async function autoBackup() {
 export async function configureWifi() {
   if (!isNative || !app.data) return;
   const w = app.data.settings.wifi;
-  await PunchClock.configureWifi({ ...w, enabled: w.enabled && !!w.ssid }).catch((e) => console.error(e));
+  const minutes = (hhmm: string) => {
+    const [h, m] = hhmm.split(':').map(Number);
+    return h * 60 + m;
+  };
+  await PunchClock.configureWifi({
+    enabled: w.enabled && !!w.ssid,
+    ssid: w.ssid,
+    mode: w.mode,
+    clockOutOnDisconnect: w.clockOutOnDisconnect,
+    graceMinutes: w.graceMinutes,
+    breakWindow: w.breakWindow,
+    breakFromMinutes: minutes(w.breakFrom),
+    breakToMinutes: minutes(w.breakTo)
+  }).catch((e) => console.error(e));
 }
 
 let started = false;

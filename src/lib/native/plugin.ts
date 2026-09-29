@@ -15,6 +15,9 @@ export interface WifiConfig {
   mode: 'ask' | 'auto';
   clockOutOnDisconnect: boolean;
   graceMinutes: number;
+  breakWindow: boolean;
+  breakFromMinutes: number;
+  breakToMinutes: number;
 }
 
 export interface NativePermissions {

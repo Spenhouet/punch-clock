@@ -54,4 +54,13 @@ describe('clock actions', () => {
     await clockOut(at('12:20'), 'button', database);
     expect(await database.segments.filter((s) => s.end === null).count()).toBe(0);
   });
+
+  it('drops an empty break when clocking out where it began', async () => {
+    await clockIn(at('08:00'), 'button', database);
+    await startBreak(at('12:00'), undefined, 'wifi', database);
+    await clockOut(at('12:00'), 'wifi', database);
+    const segs = await database.segments.toArray();
+    expect(segs.map((s) => s.kind)).toEqual(['work']);
+    expect(segs[0].end).toBe(at('12:00'));
+  });
 });
