@@ -288,7 +288,7 @@ public class ClockService extends Service {
         ClockState.Wifi w = ClockState.wifi(this);
         long at = System.currentTimeMillis();
         if (w.auto) {
-            ClockActions.perform(this, "resume", at, ClockState.SOURCE_WIFI);
+            ClockActions.perform(this, "resume", at, ClockState.SOURCE_WIFI, w.ssid);
             Notifications.postInfo(this, getString(R.string.wifi_break_ended, Notifications.time(this, at)));
         } else {
             ClockState.setWifiBreakAt(this, 0);

@@ -3,7 +3,7 @@
   import { m } from '$lib/paraglide/messages.js';
   import { getLocale, setLocale } from '$lib/paraglide/runtime';
   import { setMode, userPrefersMode } from 'mode-watcher';
-  import { Briefcase, PiggyBank, TreePalm, Wifi, Database, ExternalLink, X, Plus } from '@lucide/svelte';
+  import { Briefcase, PiggyBank, TreePalm, Database, ExternalLink, X, Plus } from '@lucide/svelte';
   import PageHeader from '$lib/components/app/PageHeader.svelte';
   import Group from '$lib/components/app/Group.svelte';
   import Row from '$lib/components/app/Row.svelte';
@@ -14,8 +14,9 @@
   import { saveSettings } from '$lib/db';
   import { scheduleFor } from '$lib/domain/calc';
   import { formatMinutes, formatNumber } from '$lib/format';
-  import { isNative } from '$lib/native/index.svelte';
   import { STATE_NAMES } from '$lib/domain/holidays';
+  import PlacesSettings from './PlacesSettings.svelte';
+  import AutomationSettings from './AutomationSettings.svelte';
   import type { Rounding, RoundingMode } from '$lib/domain/types';
 
   const ledger = $derived(app.ledger!);
@@ -69,6 +70,8 @@
       href={resolve('/settings/vacation')}
     />
   </Group>
+
+  <PlacesSettings />
 
   <Group title={m.settings_breaks()} footer={m.presets_hint()}>
     <div class="flex flex-wrap items-center gap-2 px-4 py-3">
@@ -142,18 +145,7 @@
     </div>
   </Group>
 
-  <Group title={m.settings_automation()}>
-    <Row
-      icon={Wifi}
-      label={m.notifications_and_wifi()}
-      description={isNative
-        ? settings.wifi.enabled && settings.wifi.ssid
-          ? settings.wifi.ssid
-          : m.wifi_off()
-        : m.android_only()}
-      href={resolve('/settings/automation')}
-    />
-  </Group>
+  <AutomationSettings />
 
   <Group title={m.settings_data()}>
     <Row

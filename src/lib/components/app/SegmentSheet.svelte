@@ -6,8 +6,10 @@
   import Segmented from './Segmented.svelte';
   import Field from './Field.svelte';
   import HoursInput from './HoursInput.svelte';
+  import NativeSelect from './NativeSelect.svelte';
   import { app } from '$lib/state.svelte';
   import { requiredBreak } from '$lib/domain/calc';
+  import { activePlaces, fallbackPlace } from '$lib/domain/places';
   import { formatMinutes } from '$lib/format';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
@@ -23,10 +25,23 @@
   let to = $state('');
   let note = $state('');
   let breakMin = $state(0);
+  let placeId = $state('');
   let isRunning = $state(false);
   let error = $state('');
 
   const existing = $derived(ui.segment?.id ? (ui.segment as Segment) : undefined);
+
+  // Archived places stay selectable on the entries that already use them
+  const placeOptions = $derived.by(() => {
+    const settings = app.data?.settings;
+    if (!settings) return [];
+    const list = settings.places.filter((p) => !p.archived || p.id === placeId);
+    if (!list.length) return [];
+    return [{ value: '', label: m.place_none() }, ...list.map((p) => ({ value: p.id, label: p.name }))];
+  });
+  const showPlace = $derived(
+    kind === 'work' && placeOptions.length > 0 && (placeId !== '' || activePlaces(app.data!.settings).length > 0)
+  );
 
   $effect(() => {
     if (!ui.segmentOpen) return;
@@ -39,6 +54,9 @@
     to = s.end ? toHHmm(s.end) : toHHmm(Date.now());
     note = s.note ?? '';
     breakMin = s.breakMinutes ?? 0;
+    placeId =
+      s.placeId ??
+      (s.id || !app.data ? '' : (fallbackPlace(app.data.settings, app.data.segments, toDateKey(start), start) ?? ''));
     error = '';
   });
 
@@ -81,6 +99,7 @@
       end: range.end,
       note: note.trim() || undefined,
       breakMinutes: kind === 'work' && breakMin > 0 ? breakMin : undefined,
+      placeId: kind === 'work' && placeId ? placeId : undefined,
       source: existing?.source ?? 'manual',
       plannedEnd: isRunning ? existing?.plannedEnd : undefined
     });
@@ -147,6 +166,11 @@
           to: existing.rawEnd ? toHHmm(existing.rawEnd) : to
         })}
       </p>
+    {/if}
+    {#if showPlace}
+      <Field label={m.place()}>
+        <NativeSelect bind:value={placeId} options={placeOptions} />
+      </Field>
     {/if}
     <Field label={m.note()}>
       <Textarea bind:value={note} rows={2} placeholder={m.note_placeholder()} />

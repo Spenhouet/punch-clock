@@ -161,7 +161,7 @@ public final class ClockState {
 
     // ---- Event queue ----
 
-    public static void queueEvent(Context context, String action, long at, String source) {
+    public static void queueEvent(Context context, String action, long at, String source, String ssid) {
         synchronized (QUEUE_LOCK) {
             SharedPreferences p = prefs(context);
             JSONArray arr = parse(p.getString(K_EVENTS, "[]"));
@@ -170,6 +170,7 @@ public final class ClockState {
                 e.put("action", action);
                 e.put("at", at);
                 e.put("source", source);
+                if (ssid != null) e.put("ssid", ssid);
                 arr.put(e);
             } catch (JSONException ex) {
                 Log.e(TAG, "queue event", ex);

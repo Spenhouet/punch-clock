@@ -11,13 +11,17 @@
   import Setup from '$lib/components/app/Setup.svelte';
   import { app } from '$lib/state.svelte';
   import { initNative } from '$lib/native/index.svelte';
+  import { sync } from '$lib/sync/index.svelte';
   import { getLocale } from '$lib/paraglide/runtime';
 
   let { children } = $props();
 
   onMount(() => {
     document.documentElement.lang = getLocale();
-    app.start().then(initNative);
+    app.start().then(() => {
+      initNative();
+      sync.start();
+    });
   });
 </script>
 

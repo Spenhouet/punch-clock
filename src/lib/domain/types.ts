@@ -26,8 +26,20 @@ export interface Segment {
   plannedEnd?: Timestamp;
   /** Work only: break taken somewhere inside this entry, when its exact time is unknown. */
   breakMinutes?: number;
+  /** Work only: where the work happened, see `Settings.places`. */
+  placeId?: string;
   note?: string;
   source: SegmentSource;
+}
+
+/** A place of work such as the office or home office, detected by its Wi-Fi networks. */
+export interface Place {
+  id: string;
+  name: string;
+  /** Networks that identify this place. Being on one of them when work starts picks the place. */
+  ssids: string[];
+  /** Removed from selection, but kept so older entries still show their place. */
+  archived?: boolean;
 }
 
 export type AbsenceType = 'vacation' | 'comp_time' | 'sick' | 'special' | 'other';
@@ -101,6 +113,10 @@ export interface Settings {
   /** Android: write a weekly backup file to the Documents folder. */
   autoBackup: boolean;
   lastBackup?: string;
+  /** Places of work. Tracking places is off while this is empty. */
+  places: Place[];
+  /** Place used when no Wi-Fi identifies one, or `''` for none. */
+  defaultPlace: string;
   wifi: {
     enabled: boolean;
     ssid: string;

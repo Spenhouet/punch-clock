@@ -60,6 +60,8 @@ export function defaultSettings(): Settings {
     notifications: true,
     reminderAfterMinutes: 600,
     autoBackup: false,
+    places: [],
+    defaultPlace: '',
     wifi: {
       enabled: false,
       ssid: '',

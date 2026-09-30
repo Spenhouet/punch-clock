@@ -63,4 +63,23 @@ describe('clock actions', () => {
     expect(segs.map((s) => s.kind)).toEqual(['work']);
     expect(segs[0].end).toBe(at('12:00'));
   });
+
+  it('keeps the place of work across a break and falls back to the default place', async () => {
+    const places = [
+      { id: 'office', name: 'Office', ssids: ['corp'] },
+      { id: 'home', name: 'Home', ssids: ['home-net'] }
+    ];
+    await saveSettings({ places, defaultPlace: 'home' }, database);
+    const first = await clockIn(at('08:00'), 'button', database);
+    expect(first?.placeId).toBe('home');
+    await database.segments.update(first!.id, { placeId: 'office' });
+    await startBreak(at('12:00'), undefined, 'button', database);
+    const after = await endBreak(at('12:30'), 'button', database);
+    expect(after?.placeId).toBe('office');
+  });
+
+  it('assigns no place while no places are set up', async () => {
+    const seg = await clockIn(at('08:00'), 'button', database);
+    expect(seg?.placeId).toBeUndefined();
+  });
 });
