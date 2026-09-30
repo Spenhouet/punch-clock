@@ -4,6 +4,18 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-30
+
+### Features
+
+- Places of work. Add places like the office or home office in Settings and assign Wi-Fi networks to them. When work starts on one of those networks, the entry gets that place. After a break the place of the entry before stays, otherwise the place marked as default applies. Change the place in one tap on Today while clocked in, or on any entry. Places can be reordered, and removing a place keeps its name on older entries. Both CSV exports have a new Place column.
+- Online backup. Under Backup & transfer, turn it on with a GitHub token and a passphrase. PunchClock then backs up after every change to a secret gist in your GitHub account, encrypted on the device with your passphrase (AES-256-GCM), so nobody can read it without the passphrase. To move to a new phone or recover a lost one, tap Restore online backup during setup and enter the token, passphrase and backup ID. The token stays on the device and is never part of a backup.
+- Notifications, widget, Wi-Fi trigger and automation apps are now sections on the Settings page instead of a separate screen.
+
+### Fixes
+
+- The entries CSV now subtracts a break recorded inside an entry from its duration, like the day totals do.
+
 ## [0.4.0] - 2026-09-29
 
 ### Features

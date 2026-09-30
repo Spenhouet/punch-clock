@@ -46,7 +46,7 @@ public class WifiReceiver extends BroadcastReceiver {
         if (at - ClockState.lastConnectHandled(app) < DEBOUNCE_MS) return;
         ClockState.setLastConnectHandled(app, at);
         if (w.auto) {
-            boolean started = ClockActions.perform(app, "in", at, ClockState.SOURCE_WIFI);
+            boolean started = ClockActions.perform(app, "in", at, ClockState.SOURCE_WIFI, ssid);
             if (!started || !ClockService.shouldRun(app)) {
                 Notifications.postInfo(app, app.getString(R.string.wifi_clocked_in, Notifications.time(app, at), w.ssid));
             }

@@ -7,6 +7,8 @@ export interface NativeEvent {
   action: 'in' | 'out' | 'break' | 'resume';
   at: number;
   source: 'wifi' | 'notification';
+  /** Wi-Fi the phone was on at that moment, when known. */
+  ssid?: string;
 }
 
 export interface WifiConfig {

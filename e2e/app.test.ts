@@ -230,3 +230,86 @@ test('long press on a day starts selection', async ({ page }) => {
   await page.locator('[data-date="2026-10-13"]').click();
   await expect(page.getByRole('button', { name: 'Mark 2 days' })).toBeVisible();
 });
+
+test('places of work: explicit default, order, switch while working', async ({ page }) => {
+  await setup(page);
+  await page.goto('/settings');
+  for (const [name, ssid] of [
+    ['Office', 'corp'],
+    ['Home office', 'home-net']
+  ]) {
+    await page.getByRole('button', { name: 'Add place' }).click();
+    await page.getByPlaceholder('e.g. Office or Home office').fill(name);
+    await page.getByPlaceholder('Network name (SSID)').fill(ssid);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  }
+  // The first place was suggested as default in its editor, and the list says so
+  await expect(page.getByRole('button', { name: /^Office corp Default/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Home office home-net$/ })).toBeVisible();
+
+  // Make the home office the default and move it to the top
+  await page.getByRole('button', { name: /^Home office/ }).click();
+  await page.getByRole('dialog').getByRole('switch').click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Move up' }).nth(1).click();
+  const names = page.getByRole('button', { name: /^(Office|Home office) / });
+  await expect(names.first()).toHaveText(/Home office.*Default/);
+
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Clock in' }).click();
+  const place = page.getByLabel('Place of work');
+  await expect(place.locator('option:checked')).toHaveText('Home office');
+  await expect(place.locator('option').nth(1)).toHaveText('Home office');
+  await place.selectOption({ label: 'Office' });
+  await expect(page.getByRole('button', { name: /08:00 – now.*Office/ })).toBeVisible();
+});
+
+test('move to a new phone with the online backup', async ({ browser, page }) => {
+  // A fake GitHub gist API shared by both phones
+  const gists = new Map<string, string>();
+  const fakeGitHub = async (context: import('@playwright/test').BrowserContext) => {
+    await context.route('https://api.github.com/gists**', async (route) => {
+      const req = route.request();
+      const body = req.postDataJSON();
+      let id = req.url().split('/gists/')[1] ?? '';
+      if (req.method() === 'POST') id = 'abcdef0123456789abcd';
+      if (req.method() !== 'GET') gists.set(id, body.files['punchclock-backup.json.enc'].content);
+      if (!gists.has(id)) return route.fulfill({ status: 404, body: '' });
+      await route.fulfill({ json: { id, files: { 'punchclock-backup.json.enc': { content: gists.get(id) } } } });
+    });
+  };
+
+  await fakeGitHub(page.context());
+  await setup(page);
+  await page.getByRole('button', { name: 'Clock in' }).click();
+  await page.goto('/settings/data');
+  await page.getByRole('button', { name: /Turn on online backup/ }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByLabel('GitHub token').fill('github_pat_test');
+  await sheet.getByLabel(/^Passphrase/).fill('correct horse');
+  await sheet.getByLabel('Repeat passphrase').fill('correct horse');
+  await sheet.getByRole('button', { name: 'Turn on online backup' }).click();
+  await expect(page.getByRole('button', { name: /Backup ID.*Backed up/ })).toBeVisible();
+  expect(gists.get('abcdef0123456789abcd')).not.toContain('github_pat_test');
+
+  const newPhone = await browser.newContext({ baseURL: 'http://localhost:4173', locale: 'en-US' });
+  await fakeGitHub(newPhone);
+  await newPhone.clock.install({ time: new Date('2026-09-23T09:00:00+02:00') });
+  const phone = await newPhone.newPage();
+  await phone.goto('/');
+  await phone.getByRole('button', { name: 'Restore online backup' }).click();
+  const restore = phone.getByRole('dialog');
+  await restore.getByLabel('GitHub token').fill('github_pat_test');
+  await restore.getByLabel(/^Passphrase/).fill('wrong one');
+  await restore.getByLabel('Backup ID').fill('https://gist.github.com/me/abcdef0123456789abcd');
+  await restore.getByRole('button', { name: 'Restore online backup' }).click();
+  await expect(restore.getByText('Wrong passphrase.')).toBeVisible();
+  await restore.getByLabel(/^Passphrase/).fill('correct horse');
+  await restore.getByRole('button', { name: 'Restore online backup' }).click();
+  await expect(phone.getByRole('heading', { name: 'Today' })).toBeVisible();
+  await expect(phone.getByText('08:00 – now')).toBeVisible();
+  await phone.goto('/settings/data');
+  await expect(phone.getByRole('button', { name: /Backup ID.*abcdef0123456789abcd/ })).toBeVisible();
+  await newPhone.close();
+});

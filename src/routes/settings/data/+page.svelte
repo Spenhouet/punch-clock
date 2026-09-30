@@ -2,12 +2,15 @@
   import { resolve } from '$app/paths';
   import { m } from '$lib/paraglide/messages.js';
   import { toast } from 'svelte-sonner';
-  import { Download, Upload, Trash2, Smartphone } from '@lucide/svelte';
+  import { Download, Upload, Trash2, Smartphone, Cloud, CloudUpload, CloudDownload, Unplug } from '@lucide/svelte';
   import PageHeader from '$lib/components/app/PageHeader.svelte';
   import Group from '$lib/components/app/Group.svelte';
   import Row from '$lib/components/app/Row.svelte';
   import Confirm from '$lib/components/app/Confirm.svelte';
   import { Switch } from '$lib/components/ui/switch';
+  import OnlineBackupSheet from '$lib/components/app/OnlineBackupSheet.svelte';
+  import { sync, type SyncConfig } from '$lib/sync/index.svelte';
+  import { syncErrorText } from '$lib/sync/errors';
   import { app } from '$lib/state.svelte';
   import { saveSettings, ensureDefaults } from '$lib/db';
   import { createBackup, parseBackup, restoreBackup, wipeAll, type Backup } from '$lib/db/backup';
@@ -28,12 +31,15 @@
   }
 
   let pending = $state<Backup | null>(null);
+  /** Set when restoring from an online backup: keep backing up there afterwards. */
+  let pendingSync = $state<SyncConfig | null>(null);
   let confirmRestore = $state(false);
   async function importBackup() {
     const text = await pickTextFile();
     if (!text) return;
     try {
       pending = parseBackup(text);
+      pendingSync = null;
       confirmRestore = true;
     } catch (e) {
       const code = (e as Error).message;
@@ -43,9 +49,57 @@
   async function doRestore() {
     if (!pending) return;
     await restoreBackup(pending);
+    if (pendingSync) await sync.adopt($state.snapshot(pendingSync));
     toast.success(m.restore_done({ count: pending.data.segments.length }));
     pending = null;
+    pendingSync = null;
   }
+
+  // Online backup
+  let sheetOpen = $state(false);
+  let sheetMode = $state<'enable' | 'restore'>('enable');
+  function openSheet(mode: 'enable' | 'restore') {
+    sheetMode = mode;
+    sheetOpen = true;
+  }
+  function onOpened(backup: Backup, config: SyncConfig) {
+    pending = backup;
+    pendingSync = config;
+    confirmRestore = true;
+  }
+
+  async function uploadNow() {
+    if (await sync.push(true)) toast.success(m.gist_uploaded());
+    else toast.error(syncErrorText(new Error(sync.config?.lastError)));
+  }
+
+  async function restoreFromGist() {
+    try {
+      pending = await sync.fetchBackup();
+      pendingSync = null;
+      confirmRestore = true;
+    } catch (e) {
+      toast.error(syncErrorText(e));
+    }
+  }
+
+  async function copyGistId() {
+    if (!sync.config?.gistId) return;
+    await navigator.clipboard?.writeText(sync.config.gistId).catch(() => {});
+    toast.success(m.gist_copied());
+  }
+
+  async function disconnect() {
+    await sync.disconnect();
+    toast(m.gist_disconnected());
+  }
+
+  const syncStatus = $derived.by(() => {
+    const c = sync.config;
+    if (!c) return '';
+    if (c.lastError) return m.gist_error({ error: syncErrorText(new Error(c.lastError)) });
+    return c.lastPushAt ? m.gist_last_upload({ date: formatDate(new Date(c.lastPushAt), 'PPp') }) : m.gist_never();
+  });
 
   let confirmWipe = $state(false);
   async function doWipe() {
@@ -72,6 +126,33 @@
       <Row label={m.auto_backup()} description={m.auto_backup_hint()}>
         <Switch checked={ledger.settings.autoBackup} onCheckedChange={(v) => saveSettings({ autoBackup: v })} />
       </Row>
+    {/if}
+  </Group>
+
+  <Group title={m.gist_backup()} footer={m.gist_backup_hint()}>
+    {#if sync.config}
+      <Row icon={Cloud} label={m.gist_id()} description={syncStatus} value={sync.config.gistId} onclick={copyGistId} />
+      <Row icon={CloudUpload} label={m.gist_upload_now()} onclick={uploadNow} />
+      <Row
+        icon={CloudDownload}
+        label={m.gist_restore()}
+        description={m.gist_restore_hint()}
+        onclick={restoreFromGist}
+      />
+      <Row icon={Unplug} label={m.gist_disconnect()} description={m.gist_disconnect_hint()} onclick={disconnect} />
+    {:else}
+      <Row
+        icon={CloudUpload}
+        label={m.gist_enable()}
+        description={m.gist_setup_hint()}
+        onclick={() => openSheet('enable')}
+      />
+      <Row
+        icon={CloudDownload}
+        label={m.gist_restore()}
+        description={m.gist_restore_hint()}
+        onclick={() => openSheet('restore')}
+      />
     {/if}
   </Group>
 
@@ -102,6 +183,13 @@
   destructive
   onconfirm={doRestore}
 />
+<OnlineBackupSheet
+  bind:open={sheetOpen}
+  mode={sheetMode}
+  onenabled={() => toast.success(m.gist_uploaded())}
+  onopened={onOpened}
+/>
+
 <Confirm
   bind:open={confirmWipe}
   title={m.wipe()}

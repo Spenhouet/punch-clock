@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet, Component } from 'svelte';
   import { ChevronRight } from '@lucide/svelte';
+  import { cn } from '$lib/utils';
 
   let {
     label,
@@ -9,7 +10,8 @@
     href,
     icon: Icon,
     onclick,
-    children
+    children,
+    actions
   }: {
     label: string;
     description?: string;
@@ -19,6 +21,8 @@
     icon?: Component<any>;
     onclick?: () => void;
     children?: Snippet;
+    /** Buttons next to a linked or clickable row, outside its tap area. */
+    actions?: Snippet;
   } = $props();
 </script>
 
@@ -34,25 +38,43 @@
   </span>
   {#if value}<span class="truncate text-sm text-muted-foreground tabular">{value}</span>{/if}
   {@render children?.()}
-  {#if href || onclick}<ChevronRight class="size-4 shrink-0 text-muted-foreground" />{/if}
+  {#if (href || onclick) && !actions}<ChevronRight class="size-4 shrink-0 text-muted-foreground" />{/if}
 {/snippet}
 
-{#if href}
-  <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-  <a {href} class="flex min-h-14 items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted/60 active:bg-muted">
-    {@render content()}
-  </a>
-{:else if onclick}
-  <button
-    type="button"
-    {onclick}
-    class="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/60 active:bg-muted"
-  >
-    {@render content()}
-  </button>
+{#snippet row(extra: string)}
+  {#if href}
+    <!-- eslint-disable svelte/no-navigation-without-resolve -->
+    <a
+      {href}
+      class={cn(
+        'flex min-h-14 items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted/60 active:bg-muted',
+        extra
+      )}
+    >
+      {@render content()}
+    </a>
+    <!-- eslint-enable svelte/no-navigation-without-resolve -->
+  {:else if onclick}
+    <button
+      type="button"
+      {onclick}
+      class="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/60 active:bg-muted {extra}"
+    >
+      {@render content()}
+    </button>
+  {:else}
+    <!-- A label, so tapping anywhere in the row toggles its switch or focuses its field -->
+    <label class="flex min-h-14 items-center gap-3 px-4 py-2.5 {extra}">
+      {@render content()}
+    </label>
+  {/if}
+{/snippet}
+
+{#if actions}
+  <div class="flex items-center">
+    {@render row('min-w-0 flex-1')}
+    <div class="flex shrink-0 items-center gap-1 pr-2">{@render actions()}</div>
+  </div>
 {:else}
-  <!-- A label, so tapping anywhere in the row toggles its switch or focuses its field -->
-  <label class="flex min-h-14 items-center gap-3 px-4 py-2.5">
-    {@render content()}
-  </label>
+  {@render row('')}
 {/if}
