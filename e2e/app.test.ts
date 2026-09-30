@@ -293,7 +293,11 @@ test('move to a new phone with the online backup', async ({ browser, page }) => 
   await expect(page.getByRole('button', { name: /Backup ID.*Backed up/ })).toBeVisible();
   expect(gists.get('abcdef0123456789abcd')).not.toContain('github_pat_test');
 
-  const newPhone = await browser.newContext({ baseURL: 'http://localhost:4173', locale: 'en-US' });
+  const newPhone = await browser.newContext({
+    baseURL: 'http://localhost:4173',
+    locale: 'en-US',
+    timezoneId: 'Europe/Berlin'
+  });
   await fakeGitHub(newPhone);
   await newPhone.clock.install({ time: new Date('2026-09-23T09:00:00+02:00') });
   const phone = await newPhone.newPage();
