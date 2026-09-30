@@ -17,6 +17,11 @@ export async function saveSegment(segment: Omit<Segment, 'date'> & { date?: Date
   return seg;
 }
 
+/** Set or clear the place of work of an entry. */
+export async function setSegmentPlace(id: string, placeId: string | undefined, database = db) {
+  await database.segments.update(id, { placeId });
+}
+
 export async function deleteSegment(id: string, database = db) {
   await database.segments.delete(id);
 }

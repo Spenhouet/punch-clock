@@ -52,7 +52,10 @@ export async function restoreBackup(backup: Backup, database = db) {
       database.kv
     ],
     async () => {
+      // Sync credentials belong to this device and are never part of a backup
+      const sync = await database.kv.get('sync');
       await Promise.all(database.tables.map((t) => t.clear()));
+      if (sync) await database.kv.put(sync);
       await database.segments.bulkAdd(d.segments);
       await database.absences.bulkAdd(d.absences);
       await database.notes.bulkAdd(d.notes);

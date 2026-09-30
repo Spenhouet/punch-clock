@@ -20,6 +20,7 @@ Offline, single-user time tracker. Static SvelteKit app (no server) deployed to 
 - `src/lib/stamp.ts`: UI entry point for clock actions (queued, undo toast, haptics).
 - `src/lib/native/`: Capacitor bridge. `plugin.ts` is the JS contract for the Java plugin in `android/app/src/main/java/com/spenhouet/punchclock/`.
 - `src/lib/export/`: PDF, CSV, iCal, file saving (share sheet on Android, download on web).
+- `src/lib/sync/`: online backup. The backup is encrypted on the device (PBKDF2 + AES-GCM, `crypto.ts`) and stored in a secret GitHub gist (`gist.ts`); the token and derived key live in the `kv` row `sync`, outside any backup.
 - `src/routes/`: Today (`/`), `/calendar`, `/stats`, `/settings/*`. Period and view are query params (`?view=month&d=2026-09-01`).
 - `messages/{en,de}.json`: every UI string. Add both languages for each new key.
 

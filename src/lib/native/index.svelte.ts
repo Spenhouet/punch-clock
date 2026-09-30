@@ -2,6 +2,9 @@ import { Capacitor } from '@capacitor/core';
 import { app } from '$lib/state.svelte';
 import { clockIn, clockOut, endBreak, startBreak } from '$lib/db/clock';
 import { saveSettings } from '$lib/db';
+import { setSegmentPlace } from '$lib/db/entries';
+import { activePlaces, placeForSsid } from '$lib/domain/places';
+import type { Segment } from '$lib/domain/types';
 import { PunchClock, type NativeEvent } from './plugin';
 
 export const isNative = Capacitor.isNativePlatform();
@@ -34,10 +37,26 @@ export async function drainNativeEvents() {
 
 async function applyEvent(e: NativeEvent) {
   const source = e.source;
-  if (e.action === 'in') await clockIn(e.at, source);
+  if (e.action === 'in') await detectPlace(await clockIn(e.at, source), e.ssid ?? null);
   else if (e.action === 'out') await clockOut(e.at, source);
   else if (e.action === 'break') await startBreak(e.at, undefined, source);
-  else if (e.action === 'resume') await endBreak(e.at, source);
+  else if (e.action === 'resume') await detectPlace(await endBreak(e.at, source), e.ssid ?? null);
+}
+
+/**
+ * Set the place of a new work entry from the Wi-Fi the phone is on. Without a given SSID it
+ * asks the system (Android only). Keeps the fallback place when no configured network matches.
+ */
+export async function detectPlace(seg: Segment | undefined, ssid?: string | null) {
+  const settings = app.data?.settings;
+  if (!seg || seg.kind !== 'work' || !settings) return;
+  if (!activePlaces(settings).some((p) => p.ssids.length)) return;
+  if (ssid === undefined) {
+    if (!isNative) return;
+    ssid = (await PunchClock.getWifiSsid().catch(() => ({ ssid: null }))).ssid;
+  }
+  const placeId = placeForSsid(settings, ssid);
+  if (placeId && placeId !== seg.placeId) await setSegmentPlace(seg.id, placeId);
 }
 
 let lastSync = '';

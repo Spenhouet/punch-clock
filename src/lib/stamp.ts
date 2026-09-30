@@ -2,7 +2,7 @@ import { toast } from 'svelte-sonner';
 import { clockIn, clockOut, endBreak, restoreSegments, snapshotSegments, startBreak } from '$lib/db/clock';
 import { m } from '$lib/paraglide/messages.js';
 import { toHHmm } from '$lib/domain/time';
-import { haptic } from '$lib/native/index.svelte';
+import { detectPlace, haptic } from '$lib/native/index.svelte';
 
 type Action = 'in' | 'out' | 'break' | 'resume';
 
@@ -25,15 +25,22 @@ async function run(action: Action, now: number, breakMinutes?: number) {
   let message = '';
   if (action === 'in') {
     const s = await clockIn(now);
-    if (s) message = m.toast_clocked_in({ time: toHHmm(s.start) });
+    if (s) {
+      message = m.toast_clocked_in({ time: toHHmm(s.start) });
+      detectPlace(s).catch((e) => console.error(e));
+    }
   } else if (action === 'out') {
     if (await clockOut(now)) message = m.toast_clocked_out({ time: toHHmm(now) });
   } else if (action === 'break') {
     if (await startBreak(now, breakMinutes)) {
       message = breakMinutes ? m.toast_break_timed({ minutes: breakMinutes }) : m.toast_break_started();
     }
-  } else if (await endBreak(now)) {
-    message = m.toast_break_ended();
+  } else {
+    const s = await endBreak(now);
+    if (s) {
+      message = m.toast_break_ended();
+      detectPlace(s).catch((e) => console.error(e));
+    }
   }
   if (message) {
     haptic();

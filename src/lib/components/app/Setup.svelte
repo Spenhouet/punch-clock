@@ -3,16 +3,18 @@
   import { m } from '$lib/paraglide/messages.js';
   import { getLocale, setLocale } from '$lib/paraglide/runtime';
   import { toast } from 'svelte-sonner';
-  import { ArrowRight, ArrowLeft, Upload } from '@lucide/svelte';
+  import { ArrowRight, ArrowLeft, Upload, CloudDownload } from '@lucide/svelte';
   import Segmented from './Segmented.svelte';
   import HoursInput from './HoursInput.svelte';
   import NativeSelect from './NativeSelect.svelte';
   import Field from './Field.svelte';
+  import OnlineBackupSheet from './OnlineBackupSheet.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { db, saveSettings } from '$lib/db';
   import { saveAdjustment, saveSchedule, saveVacationYear } from '$lib/db/entries';
-  import { parseBackup, restoreBackup } from '$lib/db/backup';
+  import { parseBackup, restoreBackup, type Backup } from '$lib/db/backup';
+  import { sync, type SyncConfig } from '$lib/sync/index.svelte';
   import { pickTextFile } from '$lib/export/save';
   import { STATES, STATE_NAMES } from '$lib/domain/holidays';
   import { addDaysKey, periodOf, todayKey } from '$lib/domain/time';
@@ -77,6 +79,14 @@
     }
   }
 
+  // A new phone: nothing to lose here, so the online backup is restored without asking again
+  let onlineOpen = $state(false);
+  async function restoreOnline(backup: Backup, config: SyncConfig) {
+    await restoreBackup(backup);
+    await sync.adopt(config);
+    toast.success(m.restore_done({ count: backup.data.segments.length }));
+  }
+
   const stateOptions = $derived([
     { value: 'none', label: m.no_holidays() },
     ...STATES.map((s) => ({ value: s, label: STATE_NAMES[s] }))
@@ -112,13 +122,18 @@
       <Field label={m.your_name()} hint={m.your_name_hint()}>
         <Input bind:value={name} class="h-11" autocomplete="name" />
       </Field>
-      <button
-        type="button"
-        class="mt-auto inline-flex items-center gap-2 self-start text-sm font-medium text-primary"
-        onclick={restore}
-      >
-        <Upload class="size-4" />{m.setup_restore()}
-      </button>
+      <div class="mt-auto flex flex-col items-start gap-3">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 text-sm font-medium text-primary"
+          onclick={() => (onlineOpen = true)}
+        >
+          <CloudDownload class="size-4" />{m.gist_restore()}
+        </button>
+        <button type="button" class="inline-flex items-center gap-2 text-sm font-medium text-primary" onclick={restore}>
+          <Upload class="size-4" />{m.setup_restore()}
+        </button>
+      </div>
     {:else if step === 1}
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">{m.setup_hours_title()}</h1>
@@ -184,3 +199,5 @@
     </Button>
   </div>
 </div>
+
+<OnlineBackupSheet bind:open={onlineOpen} mode="restore" onopened={restoreOnline} />

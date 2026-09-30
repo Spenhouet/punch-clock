@@ -3,11 +3,12 @@
   import { m } from '$lib/paraglide/messages.js';
   import StatTile from '$lib/components/app/StatTile.svelte';
   import Notice from '$lib/components/app/Notice.svelte';
-  import { Play, Square, Coffee, Plus, ChevronRight, NotebookPen, Timer } from '@lucide/svelte';
+  import { Play, Square, Coffee, Plus, ChevronRight, NotebookPen, Timer, MapPin } from '@lucide/svelte';
   import { Button } from '$lib/components/ui/button';
   import ProgressRing from '$lib/components/app/ProgressRing.svelte';
   import SegmentList from '$lib/components/app/SegmentList.svelte';
   import Delta from '$lib/components/app/Delta.svelte';
+  import NativeSelect from '$lib/components/app/NativeSelect.svelte';
   import { app } from '$lib/state.svelte';
   import { ui } from '$lib/ui.svelte';
   import { stamp } from '$lib/stamp';
@@ -15,6 +16,8 @@
   import { absenceBg, absenceLabel, warningLabel } from '$lib/labels';
   import { isoWeek, MINUTE, periodOf } from '$lib/domain/time';
   import { cn } from '$lib/utils';
+  import { activePlaces } from '$lib/domain/places';
+  import { setSegmentPlace } from '$lib/db/entries';
 
   const ledger = $derived(app.ledger!);
   const today = $derived(ledger.day(ledger.today));
@@ -35,6 +38,13 @@
   const progress = $derived(today.target > 0 ? today.worked / today.target : today.worked > 0 ? 1 : 0);
   const doneAt = $derived(status === 'working' && remaining > 0 ? app.now + remaining * MINUTE : undefined);
   const breakLeft = $derived(running?.plannedEnd ? running.plannedEnd - app.now : undefined);
+
+  // The running work entry's place, switchable in one tap
+  const places = $derived(activePlaces(settings));
+  const placeOptions = $derived([
+    { value: '', label: m.place_none() },
+    ...places.map((p) => ({ value: p.id, label: p.name }))
+  ]);
 
   function act(action: 'in' | 'out' | 'break' | 'resume', minutes?: number) {
     stamp(action, minutes);
@@ -131,6 +141,19 @@
           </Button>
         {/if}
       </div>
+
+      {#if status === 'working' && running && places.length}
+        <label class="-mt-2 flex w-full max-w-sm items-center gap-2">
+          <MapPin class="size-4 shrink-0 text-muted-foreground" />
+          <span class="sr-only">{m.place()}</span>
+          <NativeSelect
+            class="flex-1"
+            value={running.placeId ?? ''}
+            options={placeOptions}
+            onchange={(v) => setSegmentPlace(running.id, v || undefined)}
+          />
+        </label>
+      {/if}
 
       {#if status === 'working' && settings.breakPresets.length}
         <div class="-mt-2 flex w-full max-w-sm flex-col items-center gap-2">

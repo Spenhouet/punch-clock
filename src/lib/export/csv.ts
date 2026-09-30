@@ -1,6 +1,7 @@
 import type { Ledger } from '$lib/domain/calc';
 import { daysBetween, toDecimalHours, toHHmm } from '$lib/domain/time';
 import { absenceLabel } from '$lib/labels';
+import { placeName } from '$lib/domain/places';
 import { m } from '$lib/paraglide/messages.js';
 import { getLocale } from '$lib/paraglide/runtime';
 import { formatDate } from '$lib/format';
@@ -39,6 +40,7 @@ export function daysCsv(ledger: Ledger, start: string, end: string): string {
       m.difference_hours(),
       m.absence(),
       m.holiday(),
+      m.place(),
       m.note()
     ]
   ];
@@ -57,6 +59,9 @@ export function daysCsv(ledger: Ledger, start: string, end: string): string {
         .map((a) => `${absenceLabel(a.type)}${a.fraction === 0.5 ? ' ½' : ''}${a.label ? ` (${a.label})` : ''}`)
         .join(', '),
       d.holiday ?? '',
+      [...new Set(d.segments.filter((s) => s.kind === 'work').map((s) => placeName(ledger.settings, s.placeId)))]
+        .filter(Boolean)
+        .join(', '),
       d.note ?? ''
     ]);
   }
@@ -66,7 +71,7 @@ export function daysCsv(ledger: Ledger, start: string, end: string): string {
 /** One row per recorded segment. */
 export function entriesCsv(ledger: Ledger, start: string, end: string): string {
   const rows: (string | number)[][] = [
-    [m.date(), m.type(), m.from(), m.to(), m.duration_hours(), m.note(), m.source()]
+    [m.date(), m.type(), m.from(), m.to(), m.duration_hours(), m.place(), m.note(), m.source()]
   ];
   const segs = ledger.data.segments.filter((s) => s.date >= start && s.date <= end).sort((a, b) => a.start - b.start);
   for (const s of segs) {
@@ -76,7 +81,8 @@ export function entriesCsv(ledger: Ledger, start: string, end: string): string {
       s.kind === 'work' ? m.kind_work() : m.kind_break(),
       toHHmm(s.start),
       s.end ? toHHmm(s.end) : '',
-      toDecimalHours((endTs - s.start) / 60_000),
+      toDecimalHours((endTs - s.start) / 60_000 - (s.breakMinutes ?? 0)),
+      placeName(ledger.settings, s.placeId),
       s.note ?? '',
       s.source
     ]);

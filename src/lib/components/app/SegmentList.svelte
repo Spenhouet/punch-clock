@@ -1,9 +1,10 @@
 <script lang="ts">
   import { m } from '$lib/paraglide/messages.js';
-  import { Coffee, Briefcase, MessageSquareText, Wifi, Bell } from '@lucide/svelte';
+  import { Coffee, Briefcase, MessageSquareText, Wifi, Bell, MapPin } from '@lucide/svelte';
   import type { Segment } from '$lib/domain/types';
   import { formatDuration, toHHmm } from '$lib/format';
   import { app } from '$lib/state.svelte';
+  import { placeName } from '$lib/domain/places';
   import { ui } from '$lib/ui.svelte';
   import { cn } from '$lib/utils';
 
@@ -34,6 +35,9 @@
           <span class="flex items-center gap-1 truncate text-xs text-muted-foreground">
             {s.kind === 'work' ? m.kind_work() : m.kind_break()}
             {#if s.breakMinutes}· {m.break_included({ minutes: s.breakMinutes })}{/if}
+            {#if s.placeId && app.data}{@const place = placeName(app.data.settings, s.placeId)}{#if place}<MapPin
+                  class="size-3"
+                />{place}{/if}{/if}
             {#if s.source === 'wifi'}<Wifi class="size-3" />{/if}
             {#if s.source === 'notification'}<Bell class="size-3" />{/if}
             {#if s.note}<MessageSquareText class="size-3" /> <span class="truncate">{s.note}</span>{/if}
