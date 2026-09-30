@@ -283,6 +283,8 @@ test('move to a new phone with the online backup', async ({ browser, page }) => 
   await fakeGitHub(page.context());
   await setup(page);
   await page.getByRole('button', { name: 'Clock in' }).click();
+  // The stamp has to be stored before the page reloads
+  await expect(page.getByText('08:00 – now')).toBeVisible();
   await page.goto('/settings/data');
   await page.getByRole('button', { name: /Turn on online backup/ }).click();
   const sheet = page.getByRole('dialog');
