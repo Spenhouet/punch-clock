@@ -250,7 +250,10 @@ test('places of work: explicit default, order, switch while working', async ({ p
 
   // Make the home office the default and move it to the top
   await page.getByRole('button', { name: /^Home office/ }).click();
-  await page.getByRole('dialog').getByRole('switch').click();
+  await page
+    .getByRole('dialog')
+    .getByRole('switch', { name: /^Default place/ })
+    .click();
   await page.getByRole('button', { name: 'Save' }).click();
   await page.getByRole('button', { name: 'Move up' }).nth(1).click();
   const names = page.getByRole('button', { name: /^(Office|Home office) / });

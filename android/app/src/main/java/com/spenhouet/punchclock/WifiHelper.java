@@ -141,7 +141,7 @@ public final class WifiHelper {
         try {
             cm.unregisterNetworkCallback(pi);
         } catch (RuntimeException ignore) {}
-        if (!ClockState.wifi(app).active()) {
+        if (!ClockState.wifiActive(app)) {
             RearmJobService.cancel(app);
             return;
         }
@@ -163,14 +163,13 @@ public final class WifiHelper {
     }
 
     /**
-     * Arm the trigger again unless the phone is on the work Wi-Fi right now. Arming while
+     * Arm the trigger again unless the phone is on a place's Wi-Fi right now. Arming while
      * connected to it would only produce a delivery for a network that is already known.
      */
     public static void rearmUnlessOnTarget(Context context) {
         Context app = context.getApplicationContext();
-        ClockState.Wifi w = ClockState.wifi(app);
-        if (!w.active()) return;
-        if (w.matches(ssidFromWifiManager(app))) return;
+        if (!ClockState.wifiActive(app)) return;
+        if (ClockState.wifiFor(app, ssidFromWifiManager(app)) != null) return;
         applyRegistration(app);
     }
 }

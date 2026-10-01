@@ -162,7 +162,6 @@
   "rounding_nearest_hint": "Kommen und Gehen werden auf den nächsten Schritt gerundet. Die genaue Zeit bleibt gespeichert.",
   "rounding_employer_hint": "Kommen wird auf-, Gehen abgerundet. Die genaue Zeit bleibt gespeichert.",
   "rounding_off_hint": "Stempelzeiten werden minutengenau gespeichert.",
-  "wifi_off": "WLAN-Auslöser aus",
   "android_only": "Nur in der Android-App",
   "settings_data": "Daten",
   "backup_export": "Sicherung & Umzug",
@@ -254,13 +253,10 @@
   "notification_ongoing": "Benachrichtigung beim Einstempeln",
   "permission_missing": "Berechtigung fehlt",
   "reminder": "Erinnerung ans Ausstempeln",
-  "wifi_trigger": "WLAN-Auslöser",
-  "wifi_trigger_hint": "Einstempeln, wenn sich das Handy mit dem Arbeits-WLAN verbindet, und ausstempeln, wenn es sich trennt.",
-  "wifi_enable": "Per WLAN ein- und ausstempeln",
-  "wifi_network": "Arbeits-WLAN",
+  "wifi_trigger_hint": "Einstempeln, wenn das Handy einem dieser Netzwerke beitritt, und ausstempeln, wenn es sie verlässt.",
+  "wifi_enable": "In diesem WLAN ein- und ausstempeln",
   "wifi_placeholder": "Netzwerkname (SSID)",
   "wifi_use_current": "Aktuelles",
-  "wifi_saved": "{ssid} gespeichert",
   "wifi_none": "Nicht mit einem WLAN verbunden oder Standortberechtigung fehlt.",
   "wifi_mode": "Wenn das WLAN verbindet",
   "wifi_mode_ask": "Nachfragen",
@@ -374,5 +370,7 @@
   "gist_restore_intro": "Stellt die Online-Sicherung auf diesem Gerät wieder her und sichert ab jetzt von hier dorthin. Nimm Token, Passphrase und Sicherungs-ID vom alten Handy.",
   "gist_passphrase_restore_hint": "Die Passphrase, die du beim Einschalten der Online-Sicherung gewählt hast.",
   "gist_passphrase_repeat": "Passphrase wiederholen",
-  "gist_passphrase_mismatch": "Die Passphrasen stimmen nicht überein."
+  "gist_passphrase_mismatch": "Die Passphrasen stimmen nicht überein.",
+  "wifi_trigger_needs_network": "Füge zuerst ein WLAN-Netzwerk hinzu.",
+  "place_trigger_on": "Stempelt ein und aus"
 }

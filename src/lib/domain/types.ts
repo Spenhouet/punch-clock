@@ -40,6 +40,21 @@ export interface Place {
   ssids: string[];
   /** Removed from selection, but kept so older entries still show their place. */
   archived?: boolean;
+  /** Android: clock in and out when the phone joins or leaves one of `ssids`. */
+  trigger?: WifiTrigger;
+}
+
+export interface WifiTrigger {
+  enabled: boolean;
+  /** Clock in and out right away, or ask with a notification first. */
+  mode: 'ask' | 'auto';
+  clockOutOnDisconnect: boolean;
+  graceMinutes: number;
+  /** Leaving the Wi-Fi inside this daily window starts a break instead of clocking out. */
+  breakWindow: boolean;
+  /** `HH:mm` */
+  breakFrom: string;
+  breakTo: string;
 }
 
 export type AbsenceType = 'vacation' | 'comp_time' | 'sick' | 'special' | 'other';
@@ -117,18 +132,6 @@ export interface Settings {
   places: Place[];
   /** Place used when no Wi-Fi identifies one, or `''` for none. */
   defaultPlace: string;
-  wifi: {
-    enabled: boolean;
-    ssid: string;
-    mode: 'ask' | 'auto';
-    clockOutOnDisconnect: boolean;
-    graceMinutes: number;
-    /** Leaving the Wi-Fi inside this daily window starts a break instead of clocking out. */
-    breakWindow: boolean;
-    /** `HH:mm` */
-    breakFrom: string;
-    breakTo: string;
-  };
 }
 
 export interface Data {

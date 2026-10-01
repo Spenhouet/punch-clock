@@ -34,7 +34,6 @@ public class ClockService extends Service {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private ConnectivityManager.NetworkCallback wifiCallback;
-    private String monitoredSsid;
     /** SSID per connected Wi-Fi network, as seen by the in-process callback. */
     private final Map<Network, String> networks = new HashMap<>();
     private boolean onTarget = false;
@@ -46,7 +45,7 @@ public class ClockService extends Service {
     static boolean shouldRun(Context context) {
         ClockState s = ClockState.load(context);
         if (!s.isClockedIn()) return false;
-        return s.notifications || ClockState.wifi(context).monitorDisconnect();
+        return s.notifications || ClockState.wifiMonitorDisconnect(context);
     }
 
     /**
@@ -58,6 +57,8 @@ public class ClockService extends Service {
     public static boolean refresh(Context context) {
         Context app = context.getApplicationContext();
         ClockService running = instance;
+        // A new session finds its place again
+        if (!ClockState.load(app).isClockedIn()) ClockState.setCurrentWifi(app, null);
         if (!shouldRun(app)) {
             if (running != null) running.shutdown();
             Notifications.cancel(app, Notifications.ID_ONGOING);
@@ -148,20 +149,21 @@ public class ClockService extends Service {
     // ---- Wi-Fi auto clock-out ----
 
     private void updateWifiMonitor() {
-        ClockState.Wifi w = ClockState.wifi(this);
-        if (!w.monitorDisconnect()) {
+        if (!ClockState.wifiMonitorDisconnect(this)) {
             stopWifiMonitor();
             return;
         }
-        if (wifiCallback != null && w.ssid.equals(monitoredSsid)) return;
-        stopWifiMonitor();
-        startWifiMonitor(w.ssid);
+        if (wifiCallback != null) {
+            // The places may have changed; judge the connected networks again
+            evaluate();
+            return;
+        }
+        startWifiMonitor();
     }
 
-    private void startWifiMonitor(String ssid) {
+    private void startWifiMonitor() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return;
-        monitoredSsid = ssid;
         networks.clear();
         onTarget = false;
         lossTime = 0;
@@ -187,10 +189,28 @@ public class ClockService extends Service {
             } catch (RuntimeException ignore) {}
         }
         wifiCallback = null;
-        monitoredSsid = null;
         networks.clear();
         onTarget = false;
         lossTime = 0;
+    }
+
+    /**
+     * The place this session is watched for: the one whose Wi-Fi clocked in, else the first place
+     * with clock-out on whose Wi-Fi the phone is seen while clocked in (e.g. clocked in by hand
+     * at the office).
+     */
+    @Nullable
+    private ClockState.Wifi watchedPlace() {
+        ClockState.Wifi current = ClockState.currentWifi(this);
+        if (current != null) return current;
+        for (String ssid : networks.values()) {
+            ClockState.Wifi w = ClockState.wifiFor(this, ssid);
+            if (w != null) {
+                ClockState.setCurrentWifi(this, w);
+                return w;
+            }
+        }
+        return null;
     }
 
     private class Callback extends ConnectivityManager.NetworkCallback {
@@ -227,7 +247,10 @@ public class ClockService extends Service {
     }
 
     private void evaluate() {
-        boolean now = monitoredSsid != null && networks.containsValue(monitoredSsid);
+        ClockState.Wifi w = watchedPlace();
+        if (w == null || !w.clockOutOnDisconnect) return;
+        boolean now = false;
+        for (String ssid : networks.values()) if (w.matches(ssid)) now = true;
         if (now == onTarget) return;
         onTarget = now;
         if (now) {
@@ -239,17 +262,16 @@ public class ClockService extends Service {
             lossTime = System.currentTimeMillis();
             // The connect trigger fires only once per arming; arm it for the next arrival
             WifiHelper.applyRegistration(this);
-            int grace = ClockState.wifi(this).graceMinutes;
             handler.removeCallbacks(graceCheck);
-            handler.postDelayed(graceCheck, grace * 60_000L);
+            handler.postDelayed(graceCheck, w.graceMinutes * 60_000L);
         }
     }
 
     private void onGraceExpired() {
         if (onTarget || lossTime == 0) return;
         ClockState s = ClockState.load(this);
-        ClockState.Wifi w = ClockState.wifi(this);
-        if (!s.isClockedIn() || !w.monitorDisconnect()) return;
+        ClockState.Wifi w = ClockState.currentWifi(this);
+        if (!s.isClockedIn() || w == null || !w.clockOutOnDisconnect) return;
         long at = lossTime;
         lossTime = 0;
         if (s.isWorking() && w.inBreakWindow(at)) {
@@ -257,10 +279,10 @@ public class ClockService extends Service {
             if (w.auto) {
                 ClockActions.perform(this, "break", at, ClockState.SOURCE_WIFI);
                 ClockState.setWifiBreakAt(this, at);
-                Notifications.postInfo(this, getString(R.string.wifi_break_started, Notifications.time(this, at), w.ssid));
+                Notifications.postInfo(this, getString(R.string.wifi_break_started, Notifications.time(this, at), w.name));
                 scheduleBreakWindowCheck();
             } else {
-                Notifications.postBreakPrompt(this, w.ssid, at);
+                Notifications.postBreakPrompt(this, w.name, at);
             }
             return;
         }
@@ -274,9 +296,9 @@ public class ClockService extends Service {
         if (ClockState.wifiBreakAt(this) > 0) return;
         if (w.auto) {
             ClockActions.perform(this, "out", at, ClockState.SOURCE_WIFI);
-            Notifications.postInfo(this, getString(R.string.wifi_clocked_out, Notifications.time(this, at), w.ssid));
+            Notifications.postInfo(this, getString(R.string.wifi_clocked_out, Notifications.time(this, at), w.name));
         } else {
-            Notifications.postClockOutPrompt(this, w.ssid, at);
+            Notifications.postClockOutPrompt(this, w.name, at);
         }
     }
 
@@ -285,14 +307,15 @@ public class ClockService extends Service {
         long breakAt = ClockState.wifiBreakAt(this);
         if (breakAt <= 0 || !ClockState.load(this).isOnBreak()) return;
         handler.removeCallbacks(breakWindowCheck);
-        ClockState.Wifi w = ClockState.wifi(this);
+        ClockState.Wifi w = ClockState.currentWifi(this);
+        if (w == null) return;
         long at = System.currentTimeMillis();
         if (w.auto) {
-            ClockActions.perform(this, "resume", at, ClockState.SOURCE_WIFI, w.ssid);
+            ClockActions.perform(this, "resume", at, ClockState.SOURCE_WIFI, w.ssids.iterator().next());
             Notifications.postInfo(this, getString(R.string.wifi_break_ended, Notifications.time(this, at)));
         } else {
             ClockState.setWifiBreakAt(this, 0);
-            Notifications.postResumePrompt(this, w.ssid, at);
+            Notifications.postResumePrompt(this, w.name, at);
         }
     }
 
@@ -300,7 +323,8 @@ public class ClockService extends Service {
         handler.removeCallbacks(breakWindowCheck);
         long breakAt = ClockState.wifiBreakAt(this);
         if (breakAt <= 0) return;
-        ClockState.Wifi w = ClockState.wifi(this);
+        ClockState.Wifi w = ClockState.currentWifi(this);
+        if (w == null) return;
         long due = w.breakWindowEnd(breakAt) + w.graceMinutes * 60_000L;
         handler.postDelayed(breakWindowCheck, Math.max(0, due - System.currentTimeMillis()));
     }
@@ -312,13 +336,14 @@ public class ClockService extends Service {
     private void onBreakWindowOver() {
         long breakAt = ClockState.wifiBreakAt(this);
         if (breakAt <= 0 || onTarget || !ClockState.load(this).isOnBreak()) return;
-        ClockState.Wifi w = ClockState.wifi(this);
+        ClockState.Wifi w = ClockState.currentWifi(this);
+        if (w == null) return;
         if (w.auto) {
             ClockActions.perform(this, "out", breakAt, ClockState.SOURCE_WIFI);
             Notifications.postInfo(this, getString(R.string.wifi_break_timeout, Notifications.time(this, breakAt)));
         } else {
             ClockState.setWifiBreakAt(this, 0);
-            Notifications.postClockOutPrompt(this, w.ssid, breakAt);
+            Notifications.postClockOutPrompt(this, w.name, breakAt);
         }
     }
 }

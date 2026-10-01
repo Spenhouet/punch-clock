@@ -105,21 +105,13 @@ public class PunchClockPlugin extends Plugin {
 
     @PluginMethod
     public void configureWifi(PluginCall call) {
-        Double grace = call.getDouble("graceMinutes");
-        ClockState.saveWifi(
-            getContext(),
-            Boolean.TRUE.equals(call.getBoolean("enabled", false)),
-            call.getString("ssid", ""),
-            call.getString("mode", "ask"),
-            Boolean.TRUE.equals(call.getBoolean("clockOutOnDisconnect", false)),
-            grace == null ? 5 : grace.intValue()
-        );
-        ClockState.saveBreakWindow(
-            getContext(),
-            Boolean.TRUE.equals(call.getBoolean("breakWindow", false)),
-            (int) getLong(call, "breakFromMinutes"),
-            (int) getLong(call, "breakToMinutes")
-        );
+        JSONArray rules;
+        try {
+            rules = call.getArray("rules", new JSArray());
+        } catch (RuntimeException e) {
+            rules = new JSONArray();
+        }
+        ClockState.saveWifiRules(getContext(), rules);
         WifiHelper.applyRegistration(getContext());
         ClockService.refresh(getContext());
         call.resolve();

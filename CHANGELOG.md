@@ -4,6 +4,12 @@ Each release on GitHub uses the matching section below as its release notes. Add
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-01
+
+### Features
+
+- The Wi-Fi trigger now belongs to places of work. Turn on "Clock in and out on this Wi-Fi" in a place's editor, with its own mode, clock-out, grace time and usual break time, so several places (office, second office, home office) can each clock you in and out. Notifications name the place. An existing work Wi-Fi setting moves to the place that lists the network, or to a new place named after it.
+
 ## [0.5.0] - 2026-09-30
 
 ### Features

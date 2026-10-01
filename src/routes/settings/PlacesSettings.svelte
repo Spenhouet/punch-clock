@@ -11,10 +11,11 @@
   import { Switch } from '$lib/components/ui/switch';
   import { app } from '$lib/state.svelte';
   import { saveSettings } from '$lib/db';
-  import { activePlaces } from '$lib/domain/places';
+  import { activePlaces, defaultTrigger } from '$lib/domain/places';
+  import PlaceTrigger from './PlaceTrigger.svelte';
   import { isNative } from '$lib/native/index.svelte';
   import { PunchClock } from '$lib/native/plugin';
-  import type { Place } from '$lib/domain/types';
+  import type { Place, WifiTrigger } from '$lib/domain/types';
 
   const settings = $derived(app.ledger!.settings);
   const places = $derived(activePlaces(settings));
@@ -26,6 +27,7 @@
   let ssids = $state<string[]>([]);
   let newSsid = $state('');
   let isDefault = $state(false);
+  let trigger = $state<WifiTrigger>(defaultTrigger());
   let error = $state('');
 
   function edit(place: Place | null) {
@@ -33,6 +35,7 @@
     name = place?.name ?? '';
     ssids = [...(place?.ssids ?? [])];
     newSsid = '';
+    trigger = { ...defaultTrigger(), ...(place?.trigger ?? {}) };
     // Suggested for the first place, visible in the switch so it's never a hidden choice
     isDefault = place ? settings.defaultPlace === place.id : !places.some((p) => p.id === settings.defaultPlace);
     error = '';
@@ -69,7 +72,12 @@
     }
     // A network typed but not added yet still counts
     if (newSsid.trim()) addSsid(newSsid);
-    const place: Place = { id: editing?.id ?? crypto.randomUUID(), name: trimmed, ssids: $state.snapshot(ssids) };
+    const place: Place = {
+      id: editing?.id ?? crypto.randomUUID(),
+      name: trimmed,
+      ssids: $state.snapshot(ssids),
+      trigger: { ...$state.snapshot(trigger), enabled: trigger.enabled && ssids.length > 0 }
+    };
     const list = editing ? settings.places.map((p) => (p.id === place.id ? place : p)) : [...settings.places, place];
     const defaultPlace = isDefault ? place.id : settings.defaultPlace === place.id ? '' : settings.defaultPlace;
     await saveSettings({ places: $state.snapshot(list), defaultPlace });
@@ -83,7 +91,7 @@
     // Entries keep pointing at the place, so keep its name for them and hide it from selection
     const used = app.data!.segments.some((s) => s.placeId === id);
     const list = used
-      ? settings.places.map((p) => (p.id === id ? { ...p, ssids: [], archived: true } : p))
+      ? settings.places.map((p) => (p.id === id ? { ...p, ssids: [], trigger: undefined, archived: true } : p))
       : settings.places.filter((p) => p.id !== id);
     await saveSettings({
       places: $state.snapshot(list),
@@ -110,7 +118,9 @@
     <Row
       icon={MapPin}
       label={p.name}
-      description={p.ssids.length ? p.ssids.join(', ') : m.place_wifis_none()}
+      description={p.ssids.length
+        ? p.ssids.join(', ') + (p.trigger?.enabled ? ` · ${m.place_trigger_on()}` : '')
+        : m.place_wifis_none()}
       value={settings.defaultPlace === p.id ? m.place_default_badge() : undefined}
       onclick={() => edit(p)}
     >
@@ -181,6 +191,7 @@
       </div>
       <span class="text-xs text-muted-foreground">{m.place_wifis_hint()}</span>
     </div>
+    <PlaceTrigger bind:trigger hasNetworks={ssids.length > 0 || newSsid.trim() !== ''} />
     <label class="flex items-center gap-3">
       <span class="flex-1">
         <span class="block text-sm font-medium">{m.place_default()}</span>

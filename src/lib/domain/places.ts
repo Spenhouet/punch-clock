@@ -1,4 +1,4 @@
-import type { Place, Segment, Settings, Timestamp } from './types';
+import type { Place, Segment, Settings, Timestamp, WifiTrigger } from './types';
 
 /** Places that can be picked for new entries. */
 export function activePlaces(settings: Pick<Settings, 'places'>): Place[] {
@@ -34,4 +34,23 @@ export function fallbackPlace(
     .sort((a, b) => b.start - a.start)[0];
   if (previous?.placeId && active.some((p) => p.id === previous.placeId)) return previous.placeId;
   return active.some((p) => p.id === settings.defaultPlace) ? settings.defaultPlace : undefined;
+}
+
+export function defaultTrigger(): WifiTrigger {
+  return {
+    enabled: false,
+    mode: 'ask',
+    clockOutOnDisconnect: true,
+    graceMinutes: 5,
+    breakWindow: false,
+    breakFrom: '12:00',
+    breakTo: '13:30'
+  };
+}
+
+/** Places whose Wi-Fi clocks in and out. */
+export function triggerPlaces(settings: Pick<Settings, 'places'>): (Place & { trigger: WifiTrigger })[] {
+  return activePlaces(settings).filter(
+    (p): p is Place & { trigger: WifiTrigger } => !!p.trigger?.enabled && p.ssids.length > 0
+  );
 }
