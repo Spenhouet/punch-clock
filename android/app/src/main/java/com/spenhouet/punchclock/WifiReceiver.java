@@ -15,8 +15,7 @@ public class WifiReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Context app = context.getApplicationContext();
-        ClockState.Wifi w = ClockState.wifi(app);
-        if (!w.active()) return;
+        if (!ClockState.wifiActive(app)) return;
         Network network = getNetwork(intent);
         // A registration re-delivers networks that were already connected; only react to new ones
         if (network != null && !ClockState.markNetworkSeen(app, network.getNetworkHandle())) return;
@@ -40,18 +39,19 @@ public class WifiReceiver extends BroadcastReceiver {
     }
 
     private static void handle(Context app, String ssid, long at) {
-        ClockState.Wifi w = ClockState.wifi(app);
-        if (!w.matches(ssid)) return;
+        ClockState.Wifi w = ClockState.wifiFor(app, ssid);
+        if (w == null) return;
         if (ClockState.load(app).isClockedIn()) return;
         if (at - ClockState.lastConnectHandled(app) < DEBOUNCE_MS) return;
         ClockState.setLastConnectHandled(app, at);
+        ClockState.setCurrentWifi(app, w);
         if (w.auto) {
             boolean started = ClockActions.perform(app, "in", at, ClockState.SOURCE_WIFI, ssid);
             if (!started || !ClockService.shouldRun(app)) {
-                Notifications.postInfo(app, app.getString(R.string.wifi_clocked_in, Notifications.time(app, at), w.ssid));
+                Notifications.postInfo(app, app.getString(R.string.wifi_clocked_in, Notifications.time(app, at), w.name));
             }
         } else {
-            Notifications.postClockInPrompt(app, w.ssid, at);
+            Notifications.postClockInPrompt(app, w.name, at);
         }
     }
 }

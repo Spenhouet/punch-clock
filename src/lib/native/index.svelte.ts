@@ -3,7 +3,7 @@ import { app } from '$lib/state.svelte';
 import { clockIn, clockOut, endBreak, startBreak } from '$lib/db/clock';
 import { saveSettings } from '$lib/db';
 import { setSegmentPlace } from '$lib/db/entries';
-import { activePlaces, placeForSsid } from '$lib/domain/places';
+import { activePlaces, placeForSsid, triggerPlaces } from '$lib/domain/places';
 import type { Segment } from '$lib/domain/types';
 import { PunchClock, type NativeEvent } from './plugin';
 
@@ -153,23 +153,25 @@ async function autoBackup() {
   }
 }
 
+/** Hand the places that clock in and out by Wi-Fi to the native trigger. */
 export async function configureWifi() {
   if (!isNative || !app.data) return;
-  const w = app.data.settings.wifi;
   const minutes = (hhmm: string) => {
     const [h, m] = hhmm.split(':').map(Number);
     return h * 60 + m;
   };
-  await PunchClock.configureWifi({
-    enabled: w.enabled && !!w.ssid,
-    ssid: w.ssid,
-    mode: w.mode,
-    clockOutOnDisconnect: w.clockOutOnDisconnect,
-    graceMinutes: w.graceMinutes,
-    breakWindow: w.breakWindow,
-    breakFromMinutes: minutes(w.breakFrom),
-    breakToMinutes: minutes(w.breakTo)
-  }).catch((e) => console.error(e));
+  const rules = triggerPlaces(app.data.settings).map((p) => ({
+    placeId: p.id,
+    name: p.name,
+    ssids: [...p.ssids],
+    mode: p.trigger.mode,
+    clockOutOnDisconnect: p.trigger.clockOutOnDisconnect,
+    graceMinutes: p.trigger.graceMinutes,
+    breakWindow: p.trigger.breakWindow,
+    breakFromMinutes: minutes(p.trigger.breakFrom),
+    breakToMinutes: minutes(p.trigger.breakTo)
+  }));
+  await PunchClock.configureWifi({ rules }).catch((e) => console.error(e));
 }
 
 let started = false;
@@ -206,7 +208,14 @@ export async function initNative() {
       void app.ledger?.today;
       syncNotification();
     });
+    // The native trigger follows the stored places, whichever screen changed them
+    let lastRules = '';
+    $effect(() => {
+      const places = JSON.stringify(app.data?.settings.places ?? []);
+      if (places === lastRules) return;
+      lastRules = places;
+      configureWifi();
+    });
   });
-  await configureWifi();
   autoBackup();
 }

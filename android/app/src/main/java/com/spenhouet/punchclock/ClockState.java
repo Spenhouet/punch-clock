@@ -3,7 +3,11 @@ package com.spenhouet.punchclock;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +49,10 @@ public final class ClockState {
     private static final String K_WIFI_BREAK_FROM = "wifiBreakFrom";
     private static final String K_WIFI_BREAK_TO = "wifiBreakTo";
     /** Loss time of a break that leaving the Wi-Fi started; 0 when the current break isn't one. */
+    /** Per place of work: its networks and how they clock in and out, as a JSON array. */
+    private static final String K_WIFI_RULES = "wifiRules";
+    /** Place whose Wi-Fi the running session is on, see {@link #currentWifi}. */
+    private static final String K_WIFI_CURRENT = "wifiCurrent";
     private static final String K_WIFI_BREAK_AT = "wifiBreakAt";
     private static final String K_LAST_CONNECT = "wifiLastConnectHandled";
     private static final String K_SEEN_NETWORKS = "wifiSeenNetworks";
@@ -200,10 +208,13 @@ public final class ClockState {
 
     // ---- Wi-Fi config ----
 
+    /** Wi-Fi clock in / out of one place of work. */
     public static final class Wifi {
 
-        public final boolean enabled;
-        public final String ssid;
+        public final String placeId;
+        /** Shown in notifications. */
+        public final String name;
+        public final Set<String> ssids;
         public final boolean auto;
         public final boolean clockOutOnDisconnect;
         public final int graceMinutes;
@@ -213,27 +224,25 @@ public final class ClockState {
         public final int breakFrom;
         public final int breakTo;
 
-        Wifi(SharedPreferences p) {
-            breakWindow = p.getBoolean(K_WIFI_BREAK_WINDOW, false);
-            breakFrom = p.getInt(K_WIFI_BREAK_FROM, 12 * 60);
-            breakTo = p.getInt(K_WIFI_BREAK_TO, 13 * 60 + 30);
-            enabled = p.getBoolean(K_WIFI_ENABLED, false);
-            ssid = p.getString(K_WIFI_SSID, "");
-            auto = "auto".equals(p.getString(K_WIFI_MODE, "ask"));
-            clockOutOnDisconnect = p.getBoolean(K_WIFI_CLOCK_OUT, false);
-            graceMinutes = p.getInt(K_WIFI_GRACE, 5);
+        Wifi(JSONObject o) {
+            placeId = o.optString("placeId", "");
+            name = o.optString("name", "");
+            ssids = new HashSet<>();
+            JSONArray arr = o.optJSONArray("ssids");
+            if (arr != null) for (int i = 0; i < arr.length(); i++) {
+                String v = arr.optString(i, "").trim();
+                if (!v.isEmpty()) ssids.add(v);
+            }
+            auto = "auto".equals(o.optString("mode", "ask"));
+            clockOutOnDisconnect = o.optBoolean("clockOutOnDisconnect", false);
+            graceMinutes = Math.max(0, o.optInt("graceMinutes", 5));
+            breakWindow = o.optBoolean("breakWindow", false);
+            breakFrom = Math.max(0, Math.min(24 * 60 - 1, o.optInt("breakFromMinutes", 12 * 60)));
+            breakTo = Math.max(0, Math.min(24 * 60, o.optInt("breakToMinutes", 13 * 60 + 30)));
         }
 
-        public boolean active() {
-            return enabled && ssid != null && !ssid.isEmpty();
-        }
-
-        public boolean monitorDisconnect() {
-            return active() && clockOutOnDisconnect;
-        }
-
-        public boolean matches(String other) {
-            return other != null && active() && ssid.equals(other);
+        public boolean matches(String ssid) {
+            return ssid != null && ssids.contains(ssid);
         }
 
         /** Whether {@code ts} falls into the usual break window (local time of day). */
@@ -256,8 +265,73 @@ public final class ClockState {
         }
     }
 
-    public static Wifi wifi(Context context) {
-        return new Wifi(prefs(context));
+    /** Places that clock in and out by Wi-Fi. */
+    public static List<Wifi> wifiRules(Context context) {
+        SharedPreferences p = prefs(context);
+        List<Wifi> out = new ArrayList<>();
+        String raw = p.getString(K_WIFI_RULES, null);
+        if (raw == null) {
+            // Written by versions with a single work Wi-Fi, until the app sends the new config
+            String ssid = p.getString(K_WIFI_SSID, "");
+            if (!p.getBoolean(K_WIFI_ENABLED, false) || ssid == null || ssid.isEmpty()) return out;
+            try {
+                JSONObject o = new JSONObject()
+                    .put("name", ssid)
+                    .put("ssids", new JSONArray().put(ssid))
+                    .put("mode", p.getString(K_WIFI_MODE, "ask"))
+                    .put("clockOutOnDisconnect", p.getBoolean(K_WIFI_CLOCK_OUT, false))
+                    .put("graceMinutes", p.getInt(K_WIFI_GRACE, 5))
+                    .put("breakWindow", p.getBoolean(K_WIFI_BREAK_WINDOW, false))
+                    .put("breakFromMinutes", p.getInt(K_WIFI_BREAK_FROM, 12 * 60))
+                    .put("breakToMinutes", p.getInt(K_WIFI_BREAK_TO, 13 * 60 + 30));
+                out.add(new Wifi(o));
+            } catch (JSONException ignore) {}
+            return out;
+        }
+        JSONArray arr = parse(raw);
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject o = arr.optJSONObject(i);
+            if (o == null) continue;
+            Wifi w = new Wifi(o);
+            if (!w.ssids.isEmpty()) out.add(w);
+        }
+        return out;
+    }
+
+    public static boolean wifiActive(Context context) {
+        return !wifiRules(context).isEmpty();
+    }
+
+    /** Whether any place clocks out when its Wi-Fi is lost, so the service has to watch it. */
+    public static boolean wifiMonitorDisconnect(Context context) {
+        for (Wifi w : wifiRules(context)) if (w.clockOutOnDisconnect) return true;
+        return false;
+    }
+
+    /** The place that lists this network. */
+    public static Wifi wifiFor(Context context, String ssid) {
+        if (ssid == null) return null;
+        for (Wifi w : wifiRules(context)) if (w.matches(ssid)) return w;
+        return null;
+    }
+
+    /** The place whose Wi-Fi the running session is on, or null before the phone saw one. */
+    public static Wifi currentWifi(Context context) {
+        String id = prefs(context).getString(K_WIFI_CURRENT, null);
+        if (id == null) return null;
+        for (Wifi w : wifiRules(context)) if (w.placeId.equals(id)) return w;
+        return null;
+    }
+
+    public static void setCurrentWifi(Context context, Wifi w) {
+        SharedPreferences.Editor e = prefs(context).edit();
+        if (w == null) e.remove(K_WIFI_CURRENT);
+        else e.putString(K_WIFI_CURRENT, w.placeId);
+        e.commit();
+    }
+
+    public static void saveWifiRules(Context context, JSONArray rules) {
+        prefs(context).edit().putString(K_WIFI_RULES, rules.toString()).commit();
     }
 
     static int minuteOfDay(long ts) {
@@ -266,32 +340,12 @@ public final class ClockState {
         return c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE);
     }
 
-    public static void saveBreakWindow(Context context, boolean enabled, int from, int to) {
-        prefs(context)
-            .edit()
-            .putBoolean(K_WIFI_BREAK_WINDOW, enabled)
-            .putInt(K_WIFI_BREAK_FROM, Math.max(0, Math.min(24 * 60 - 1, from)))
-            .putInt(K_WIFI_BREAK_TO, Math.max(0, Math.min(24 * 60, to)))
-            .commit();
-    }
-
     public static long wifiBreakAt(Context context) {
         return prefs(context).getLong(K_WIFI_BREAK_AT, 0);
     }
 
     public static void setWifiBreakAt(Context context, long at) {
         prefs(context).edit().putLong(K_WIFI_BREAK_AT, at).commit();
-    }
-
-    public static void saveWifi(Context context, boolean enabled, String ssid, String mode, boolean clockOut, int graceMinutes) {
-        prefs(context)
-            .edit()
-            .putBoolean(K_WIFI_ENABLED, enabled)
-            .putString(K_WIFI_SSID, ssid == null ? "" : ssid)
-            .putString(K_WIFI_MODE, mode == null ? "ask" : mode)
-            .putBoolean(K_WIFI_CLOCK_OUT, clockOut)
-            .putInt(K_WIFI_GRACE, Math.max(0, graceMinutes))
-            .commit();
     }
 
     public static long lastConnectHandled(Context context) {

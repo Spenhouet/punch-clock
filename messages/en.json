@@ -162,7 +162,6 @@
   "rounding_nearest_hint": "Clock-in and clock-out are rounded to the nearest step. The exact time is kept as well.",
   "rounding_employer_hint": "Clock-in rounds up and clock-out rounds down. The exact time is kept as well.",
   "rounding_off_hint": "Stamps are stored to the minute.",
-  "wifi_off": "Wi-Fi trigger off",
   "android_only": "Android app only",
   "settings_data": "Data",
   "backup_export": "Backup & transfer",
@@ -254,13 +253,10 @@
   "notification_ongoing": "Notification while clocked in",
   "permission_missing": "Permission missing",
   "reminder": "Forgot-to-clock-out reminder",
-  "wifi_trigger": "Wi-Fi trigger",
-  "wifi_trigger_hint": "Clock in when your phone joins the work Wi-Fi and clock out when it leaves.",
-  "wifi_enable": "Use Wi-Fi to clock in and out",
-  "wifi_network": "Work Wi-Fi",
+  "wifi_trigger_hint": "Clock in when the phone joins one of these networks and clock out when it leaves.",
+  "wifi_enable": "Clock in and out on this Wi-Fi",
   "wifi_placeholder": "Network name (SSID)",
   "wifi_use_current": "Use current",
-  "wifi_saved": "Saved {ssid}",
   "wifi_none": "Not connected to a Wi-Fi, or location permission missing.",
   "wifi_mode": "When the Wi-Fi connects",
   "wifi_mode_ask": "Ask me",
@@ -374,5 +370,7 @@
   "gist_restore_intro": "Restores the online backup to this device and keeps backing up to it from here. Use the token, passphrase and backup ID from your old phone.",
   "gist_passphrase_restore_hint": "The passphrase you chose when turning on the online backup.",
   "gist_passphrase_repeat": "Repeat passphrase",
-  "gist_passphrase_mismatch": "The passphrases don't match."
+  "gist_passphrase_mismatch": "The passphrases don't match.",
+  "wifi_trigger_needs_network": "Add a Wi-Fi network first.",
+  "place_trigger_on": "Clocks in and out"
 }

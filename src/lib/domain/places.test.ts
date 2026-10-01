@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackPlace, placeForSsid, placeName } from './places';
+import { fallbackPlace, placeForSsid, placeName, triggerPlaces } from './places';
+import { migrateSettings } from '$lib/db';
 import type { Place, Segment } from './types';
 
 const places: Place[] = [
@@ -38,5 +39,51 @@ describe('places', () => {
   it('still names archived places', () => {
     expect(placeName(settings, 'old')).toBe('Old office');
     expect(placeName(settings, 'missing')).toBe('');
+  });
+});
+
+describe('migration of the single work Wi-Fi', () => {
+  const legacy = {
+    enabled: true,
+    ssid: 'corp',
+    mode: 'auto' as const,
+    clockOutOnDisconnect: true,
+    graceMinutes: 10,
+    breakWindow: true,
+    breakFrom: '12:00',
+    breakTo: '13:00'
+  };
+
+  it('moves it onto the place that lists the network', () => {
+    const out = migrateSettings({ wifi: legacy, places: [{ id: 'office', name: 'Office', ssids: ['corp'] }] });
+    expect(out).not.toHaveProperty('wifi');
+    expect(out.places).toEqual([
+      {
+        id: 'office',
+        name: 'Office',
+        ssids: ['corp'],
+        trigger: {
+          enabled: true,
+          mode: 'auto',
+          clockOutOnDisconnect: true,
+          graceMinutes: 10,
+          breakWindow: true,
+          breakFrom: '12:00',
+          breakTo: '13:00'
+        }
+      }
+    ]);
+  });
+
+  it('creates a stable place when no place lists it', () => {
+    const a = migrateSettings({ wifi: legacy });
+    const b = migrateSettings({ wifi: legacy });
+    expect(a.places).toEqual(b.places);
+    expect(a.places?.[0]).toMatchObject({ id: 'wifi-corp', name: 'corp', ssids: ['corp'] });
+    expect(triggerPlaces({ places: a.places! }).map((p) => p.id)).toEqual(['wifi-corp']);
+  });
+
+  it('drops an empty Wi-Fi setting', () => {
+    expect(migrateSettings({ wifi: { ...legacy, ssid: '' }, places: [] })).toEqual({ places: [] });
   });
 });
