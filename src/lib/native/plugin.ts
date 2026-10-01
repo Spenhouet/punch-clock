@@ -11,15 +11,21 @@ export interface NativeEvent {
   ssid?: string;
 }
 
-export interface WifiConfig {
-  enabled: boolean;
-  ssid: string;
+/** Wi-Fi clock in / out of one place of work. */
+export interface WifiRule {
+  placeId: string;
+  name: string;
+  ssids: string[];
   mode: 'ask' | 'auto';
   clockOutOnDisconnect: boolean;
   graceMinutes: number;
   breakWindow: boolean;
   breakFromMinutes: number;
   breakToMinutes: number;
+}
+
+export interface WifiConfig {
+  rules: WifiRule[];
 }
 
 export interface NativePermissions {

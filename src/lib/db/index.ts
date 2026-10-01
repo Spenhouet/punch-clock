@@ -6,10 +6,12 @@ import type {
   DayNote,
   Segment,
   Settings,
+  WifiTrigger,
   VacationYear,
   WorkSchedule
 } from '$lib/domain/types';
 import { todayKey } from '$lib/domain/time';
+import { defaultTrigger } from '$lib/domain/places';
 
 export interface KV {
   key: string;
@@ -61,26 +63,37 @@ export function defaultSettings(): Settings {
     reminderAfterMinutes: 600,
     autoBackup: false,
     places: [],
-    defaultPlace: '',
-    wifi: {
-      enabled: false,
-      ssid: '',
-      mode: 'ask',
-      clockOutOnDisconnect: true,
-      graceMinutes: 5,
-      breakWindow: false,
-      breakFrom: '12:00',
-      breakTo: '13:30'
-    }
+    defaultPlace: ''
   };
+}
+
+/** Settings as stored, possibly by older versions. */
+type StoredSettings = Partial<Settings> & {
+  /** Up to 0.5: one work Wi-Fi for clocking in and out, now part of each place. */
+  wifi?: Partial<WifiTrigger> & { ssid?: string };
+};
+
+/**
+ * Move the single work Wi-Fi of older versions onto the place that lists it, or onto a new place
+ * named after it. Deterministic, so reading twice gives the same place ID before anything is saved.
+ */
+export function migrateSettings(stored: StoredSettings): Partial<Settings> {
+  const { wifi, ...rest } = stored;
+  const ssid = wifi?.ssid?.trim();
+  if (!wifi || !ssid) return rest;
+  const trigger: WifiTrigger = { ...defaultTrigger(), ...wifi, enabled: !!wifi.enabled };
+  delete (trigger as { ssid?: string }).ssid;
+  const places = [...(rest.places ?? [])];
+  const i = places.findIndex((p) => !p.archived && p.ssids.includes(ssid));
+  if (i >= 0) places[i] = { ...places[i], trigger: places[i].trigger ?? trigger };
+  else places.push({ id: `wifi-${ssid}`, name: ssid, ssids: [ssid], trigger });
+  return { ...rest, places };
 }
 
 export async function loadSettings(database = db): Promise<Settings> {
   const row = await database.kv.get('settings');
-  const stored = (row?.value as Partial<Settings>) ?? {};
-  const defaults = defaultSettings();
-  // Nested so settings saved by older versions pick up new Wi-Fi fields
-  return { ...defaults, ...stored, wifi: { ...defaults.wifi, ...(stored.wifi ?? {}) } };
+  const stored = migrateSettings((row?.value as StoredSettings) ?? {});
+  return { ...defaultSettings(), ...stored };
 }
 
 export async function saveSettings(patch: Partial<Settings>, database = db): Promise<void> {
