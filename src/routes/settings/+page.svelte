@@ -202,5 +202,9 @@
       <ExternalLink class="size-3.5" />PunchClock {version}
     </a>
     <span>{m.data_local_hint()}</span>
+    <span>
+      <a href="https://spenhouet.com/impressum/" class="hover:text-foreground">{m.legal_notice()}</a> ·
+      <a href="https://spenhouet.com/datenschutz/" class="hover:text-foreground">{m.privacy_policy()}</a>
+    </span>
   </div>
 </div>

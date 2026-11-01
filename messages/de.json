@@ -372,5 +372,7 @@
   "gist_passphrase_repeat": "Passphrase wiederholen",
   "gist_passphrase_mismatch": "Die Passphrasen stimmen nicht überein.",
   "wifi_trigger_needs_network": "Füge zuerst ein WLAN-Netzwerk hinzu.",
-  "place_trigger_on": "Stempelt ein und aus"
+  "place_trigger_on": "Stempelt ein und aus",
+  "legal_notice": "Impressum",
+  "privacy_policy": "Datenschutz"
 }
