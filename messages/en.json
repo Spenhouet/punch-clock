@@ -372,5 +372,7 @@
   "gist_passphrase_repeat": "Repeat passphrase",
   "gist_passphrase_mismatch": "The passphrases don't match.",
   "wifi_trigger_needs_network": "Add a Wi-Fi network first.",
-  "place_trigger_on": "Clocks in and out"
+  "place_trigger_on": "Clocks in and out",
+  "legal_notice": "Legal notice",
+  "privacy_policy": "Privacy policy"
 }
